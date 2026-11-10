@@ -15,6 +15,11 @@
 
   <main>
     <section class="card">
+      <h2>วงจรอ้างอิง</h2>
+      <img src="{{ url_for('static', filename='bjt-circuit.svg') }}" alt="BJT Voltage Divider Bias circuit" style="width:100%;max-width:720px;margin:12px auto;display:block;border:1px solid var(--line);border-radius:8px;background:#f7faff;">
+    </section>
+
+    <section class="card">
       <h2>1. กรอกพารามิเตอร์วงจร</h2>
       <form method="post" action="{{ url_for('calculate') }}">
         <div class="grid">
