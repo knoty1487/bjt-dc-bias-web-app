@@ -88,6 +88,11 @@
 
     {% if result %}
     <section class="card">
+      <h2>วงจรจำลอง DC (ค่าตามที่คำนวณ)</h2>
+      {% include 'circuit_diagram.svg' %}
+    </section>
+
+    <section class="card">
       <h2>2. DC Bias Results</h2>
 
       <p class="region">สภาวะการทำงาน: <strong>{{ region_label }}</strong></p>
