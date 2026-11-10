@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BJT DC Bias Calculator — Voltage Divider</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">ENG29 2121 · Lab 02</p>
+    <h1>BJT DC Bias Calculator</h1>
+    <p class="subtitle">วงจรขยาย Common-Emitter แบบ Voltage-Divider Bias · NPN · Forward-Active Approximation</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>1. กรอกพารามิเตอร์วงจร</h2>
+      <form method="post" action="{{ url_for('calculate') }}">
+        <div class="grid">
+          <label>VCC (V)
+            <input type="number" step="any" name="vcc" value="{{ values.get('vcc', '') }}" required>
+          </label>
+
+          <label>R1 (VCC → Base)
+            <span class="input-row">
+              <input type="number" step="any" name="r1" value="{{ values.get('r1', '') }}" required>
+              <select name="unit_r1">
+                <option value="kohm" {% if units.get('r1', 'kohm') == 'kohm' %}selected{% endif %}>kΩ</option>
+                <option value="ohm" {% if units.get('r1') == 'ohm' %}selected{% endif %}>Ω</option>
+              </select>
+            </span>
+          </label>
+
+          <label>R2 (Base → Ground)
+            <span class="input-row">
+              <input type="number" step="any" name="r2" value="{{ values.get('r2', '') }}" required>
+              <select name="unit_r2">
+                <option value="kohm" {% if units.get('r2', 'kohm') == 'kohm' %}selected{% endif %}>kΩ</option>
+                <option value="ohm" {% if units.get('r2') == 'ohm' %}selected{% endif %}>Ω</option>
+              </select>
+            </span>
+          </label>
+
+          <label>RC (VCC → Collector)
+            <span class="input-row">
+              <input type="number" step="any" name="rc" value="{{ values.get('rc', '') }}" required>
+              <select name="unit_rc">
+                <option value="kohm" {% if units.get('rc', 'kohm') == 'kohm' %}selected{% endif %}>kΩ</option>
+                <option value="ohm" {% if units.get('rc') == 'ohm' %}selected{% endif %}>Ω</option>
+              </select>
+            </span>
+          </label>
+
+          <label>RE (Emitter → Ground)
+            <span class="input-row">
+              <input type="number" step="any" name="re" value="{{ values.get('re', '') }}" required>
+              <select name="unit_re">
+                <option value="kohm" {% if units.get('re', 'kohm') == 'kohm' %}selected{% endif %}>kΩ</option>
+                <option value="ohm" {% if units.get('re') == 'ohm' %}selected{% endif %}>Ω</option>
+              </select>
+            </span>
+          </label>
+
+          <label>β (hFE)
+            <input type="number" step="any" name="beta" value="{{ values.get('beta', '') }}" required>
+          </label>
+
+          <label>VBE (V)
+            <input type="number" step="any" name="vbe" value="{{ values.get('vbe', '') }}" required>
+          </label>
+        </div>
+
+        <button type="submit">Calculate DC Bias</button>
+      </form>
+
+      {% if error %}
+      <div class="alert error">
+        <strong>ข้อมูลไม่ถูกต้อง:</strong> {{ error }}
+      </div>
+      {% endif %}
+    </section>
+
+    {% if result %}
+    <section class="card">
+      <h2>2. DC Bias Results</h2>
+
+      <p class="region">สภาวะการทำงาน: <strong>{{ region_label }}</strong></p>
+
+      {% for warning in result.warnings %}
+      <div class="alert warn">{{ warning }}</div>
+      {% endfor %}
+
+      <table>
+        <thead>
+          <tr><th>ปริมาณ</th><th>ค่า</th><th>หน่วย</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>VB</td><td>{{ "%.3f"|format(result.vb) }}</td><td>V</td></tr>
+          <tr><td>VE</td><td>{{ "%.3f"|format(result.ve) }}</td><td>V</td></tr>
+          <tr><td>VC</td><td>{{ "%.3f"|format(result.vc) }}</td><td>V</td></tr>
+          <tr><td>VCE</td><td>{{ "%.3f"|format(result.vce) }}</td><td>V</td></tr>
+          <tr><td>IC</td><td>{{ "%.3f"|format(result.ic * 1000) }}</td><td>mA</td></tr>
+          <tr><td>IB</td><td>{{ "%.2f"|format(result.ib * 1000000) }}</td><td>µA</td></tr>
+          <tr><td>IE</td><td>{{ "%.3f"|format(result.ie * 1000) }}</td><td>mA</td></tr>
+        </tbody>
+      </table>
+
+      <h3>ค่าภายในแบบจำลอง Thevenin</h3>
+      <table>
+        <thead>
+          <tr><th>ปริมาณ</th><th>ค่า</th><th>หน่วย</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>VTH</td><td>{{ "%.3f"|format(result.vth) }}</td><td>V</td></tr>
+          <tr><td>RTH</td><td>{{ "{:,.2f}".format(result.rth) }}</td><td>Ω</td></tr>
+        </tbody>
+      </table>
+
+      <h3>ค่าที่ใช้คำนวณ (แปลงเป็น Ω แล้ว)</h3>
+      <table>
+        <thead>
+          <tr><th>ตัวต้านทาน</th><th>ค่าที่ใช้ (Ω)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>R1</td><td>{{ "{:,.0f}".format(resistors['r1']) }} Ω</td></tr>
+          <tr><td>R2</td><td>{{ "{:,.0f}".format(resistors['r2']) }} Ω</td></tr>
+          <tr><td>RC</td><td>{{ "{:,.0f}".format(resistors['rc']) }} Ω</td></tr>
+          <tr><td>RE</td><td>{{ "{:,.0f}".format(resistors['re']) }} Ω</td></tr>
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer>
+    แบบจำลอง Forward-Active (β และ VBE คงที่) · ผลลัพธ์นอกสภาวะ Forward Active
+    เป็นเพียงการประมาณและต้องอ่านคำเตือนประกอบ
+  </footer>
+</body>
+</html>
