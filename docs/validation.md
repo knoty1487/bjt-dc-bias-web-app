@@ -90,7 +90,7 @@ RB = 1 MΩ, RC = 2.2 kΩ
 คำสั่ง: `python -m unittest discover -s tests -v`
 
 ```
-Ran 48 tests in 0.075s
+Ran 50 tests in 0.121s
 
 OK
 ```
@@ -98,9 +98,9 @@ OK
 - `tests/test_dc_bias.py` — 22 tests: ค่าอ้างอิง Divider เดิม, validation,
   cutoff/saturation/near-saturation, NaN/∞, โหมด Fixed/Emitter (ค่าอ้างอิง,
   RE มากขึ้นทำให้ IC ลดลง, RB/RE ≤ 0, cutoff)
-- `tests/test_web.py` — 26 tests: GET/POST เดิมทั้งหมด, mode selector,
+- `tests/test_web.py` — 28 tests: GET/POST เดิมทั้งหมด, mode selector,
   การสลับโหมด, `formnovalidate`, ผล Fixed/Emitter จาก Flask, หน่วย Ω,
-  โหมดที่ไม่รู้จัก, error RB=0 โดยไม่มีผลค้าง
+  โหมดที่ไม่รู้จัก, error RB=0 โดยไม่มีผลค้าง, และแผนภาพ SVG ของแต่ละโหมด
 
 ## 4. ข้อจำกัดของแบบจำลอง
 

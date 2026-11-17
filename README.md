@@ -10,8 +10,9 @@ Lab 03 — ENG29 2121 (2/2569): Flask Web Application สำหรับคำ�
 ## GitHub / Commit
 
 - Repository: <https://github.com/ottoponrod/BJT-DC-Bias-Web-App>
-- Commit SHA: `24f157f079127c860e21d92818c164fdaf9b7762` (commit ที่เพิ่มโหมด
-  Fixed/Emitter, เทสต์, หลักฐาน A1–A5 และเอกสารชุดนี้)
+- Commit SHA: `50e94c456da9f943a8168579697cd1107f627d05` (commit ที่เพิ่มแผนภาพ
+  วงจรครบทั้ง 3 โหมด; งานโหมด Fixed/Emitter, เทสต์, หลักฐาน A1–A5 และเอกสาร
+  ชุดนี้อยู่ใน `24f157f079127c860e21d92818c164fdaf9b7762`)
 
 ## ความต้องการของระบบ
 
@@ -56,7 +57,7 @@ python -m flask --app app run
 python -m unittest discover -s tests -v
 ```
 
-ผลปัจจุบัน: **48 tests OK** (22 สมการ + 26 Flask)
+ผลปัจจุบัน: **50 tests OK** (22 สมการ + 28 Flask)
 
 ## โครงสร้างไฟล์
 
@@ -64,15 +65,15 @@ python -m unittest discover -s tests -v
 transistor-simulator/
 ├── app.py                  # Flask routes: GET / และ POST /calculate + mode dispatch
 ├── dc_bias.py              # สมการ 3 โหมด + validation + region detection
-├── templates/index.html    # ฟอร์มตามโหมด + ตารางผลลัพธ์ (Jinja)
+├── templates/index.html    # ฟอร์มตามโหมด + แผนภาพ SVG ครบ 3 โหมด + ตารางผลลัพธ์
 ├── static/style.css        # การจัดหน้าและ responsive layout
 ├── static/app.js           # live label บนแผนภาพวงจร
 ├── tests/test_dc_bias.py   # unit tests ของสมการ (22 tests)
-├── tests/test_web.py       # Flask test client (26 tests)
+├── tests/test_web.py       # Flask test client (28 tests)
 ├── requirements.txt
 └── docs/
     ├── validation.md       # ค่าอ้างอิง, ตาราง A1–A5, ผลทดสอบ
-    └── evidence/lab03/     # screenshot หลักฐาน A1–A5 จากเบราว์เซอร์จริง
+    └── evidence/lab03/     # screenshot A1–A5 + ภาพแผนภาพวงจร 3 โหมด
 ```
 
 ## ค่าอินพุตและผลลัพธ์
@@ -105,7 +106,8 @@ VB  = VE+VBE    VC = VCC−IC·RC      VCE = VC−VE
   พร้อม validation และการแบ่ง region แบบเดียวกับ Divider
 - เพิ่ม mode dispatch, การแปลงหน่วย และการตรวจเฉพาะช่องของแต่ละโหมดใน `app.py`
 - เพิ่ม dropdown โหมด, ช่องอินพุตแบบมีเงื่อนไข และปุ่มเปลี่ยนโหมดในเทมเพลต
-- เขียนเทสต์ใหม่ก่อนแก้โค้ด (TDD) และรันเทสต์จนผ่านทั้งหมด 48 tests
+- วาดแผนภาพวงจร SVG ให้ครบทั้ง 3 โหมด (Divider/Fixed/Emitter) พร้อม label ค่าแบบ live
+- เขียนเทสต์ใหม่ก่อนแก้โค้ด (TDD) และรันเทสต์จนผ่านทั้งหมด 50 tests
 - เปิดเว็บด้วย OpenCode Browser ตรวจ A1–A5 และบันทึก screenshot เป็นหลักฐาน
 - อัปเดต `docs/validation.md` และ README นี้
 

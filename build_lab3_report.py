@@ -14,7 +14,7 @@ OUT = DESKTOP / "B6814946_Lab3.docx"
 FALLBACK = DESKTOP / "B6814946_Lab3_updated.docx"
 
 GITHUB_URL = "https://github.com/ottoponrod/BJT-DC-Bias-Web-App"
-COMMIT_SHA = "24f157f079127c860e21d92818c164fdaf9b7762"
+COMMIT_SHA = "50e94c456da9f943a8168579697cd1107f627d05"
 
 doc = Document()
 
@@ -149,7 +149,8 @@ bullet("เพิ่ม MODES/MODE_* และ tag โหมดลงใน Bias
 bullet("เพิ่ม dropdown เลือกโหมดใน templates/index.html และให้ฟอร์มแสดงเฉพาะช่องของโหมดนั้น")
 bullet("เพิ่ม mode dispatch, การตรวจเฉพาะช่องที่จำเป็น และแปลงหน่วย kΩ/Ω ที่จุดเดียวใน app.py")
 bullet("ปุ่ม \"เปลี่ยนโหมด\" ใช้ formnovalidate จึงสลับโหมดได้แม้ยังกรอกไม่ครบ (มี regression test)")
-bullet("เขียนเทสต์ก่อนแก้โค้ด (TDD) และรันผ่านทั้งหมด 48 tests")
+bullet("เพิ่มแผนภาพวงจร (SVG) ในหน้าเว็บครบทั้ง 3 โหมด พร้อม label ค่าที่กรอกแบบ live")
+bullet("เขียนเทสต์ก่อนแก้โค้ด (TDD) และรันผ่านทั้งหมด 50 tests")
 bullet("รัน A1–A5 ด้วย Browser จริง เก็บ screenshot และบันทึกค่าจริงเทียบค่าคำนวณมือ")
 bullet("อัปเดต docs/validation.md และ README พร้อม GitHub URL และ Commit SHA")
 
@@ -225,7 +226,32 @@ para(
 
 doc.add_page_break()
 
-# ======================= 3. หลักฐานภาพหน้าจอ =======================
+# ======================= 2.1 แผนภาพวงจร =======================
+heading("2.1 แผนภาพวงจรของแต่ละโหมด", 2)
+para(
+    "หน้าเว็บวาดวงจรด้วย SVG ฝังใน templates/index.html โดยแต่ละโหมดแสดง "
+    "อุปกรณ์เฉพาะที่โหมดนั้นใช้ และ label ค่า (VCC, RB, RC, RE, β) "
+    "อัปเดตตามค่าที่กรอกจริง ภาพด้านล่างคือส่วนแผนภาพที่ตัดจากหน้าเว็บ",
+    size=10,
+)
+circuits = [
+    ("circuit-divider.png", "Voltage-Divider Bias — R1, R2, RC, RE ครบ"),
+    ("circuit-fixed.png", "Fixed Bias — RB จาก VCC ไปเบส, ไม่มี RE (VE = 0 V)"),
+    ("circuit-emitter.png", "Emitter Bias — RB ไปเบส และ RE ลงกราวด์"),
+]
+for filename, caption in circuits:
+    path = EVIDENCE / filename
+    heading(caption, 3)
+    if path.exists():
+        pic = doc.add_paragraph()
+        pic.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pic.add_run().add_picture(str(path), width=Inches(3.6))
+        para(f"หลักฐาน: docs/evidence/lab03/{filename}", size=9)
+    else:
+        para(f"[ไม่พบไฟล์ {path}]", size=9)
+
+doc.add_page_break()
+
 heading("3. หลักฐานจากหน้าเว็บ (Screenshot)", 1)
 para(
     "ภาพด้านล่างถ่ายจาก OpenCode Browser หลังส่งฟอร์มแต่ละกรณี "
