@@ -1,97 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" font-family="Tahoma, 'Noto Sans Thai', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 470" width="800" height="470" font-family="Tahoma, 'Noto Sans Thai', Arial, sans-serif">
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
       <path d="M0,0 L8,4 L0,8 Z" fill="#333"/>
     </marker>
     <style>
       .wire { fill: none; stroke: #333; stroke-width: 2; }
-      .label { font-size: 13px; fill: #113c60; text-anchor: middle; }
-      .value { font-size: 13px; font-weight: bold; fill: #b85c2c; text-anchor: middle; }
+      .lead { fill: none; stroke: #333; stroke-width: 2; }
+      .dev { fill: none; stroke: #333; stroke-width: 2; }
       .node { fill: #333; }
-      .bjt-base { fill: none; stroke: #333; stroke-width: 2; }
-      .bjt-emitter-collector { fill: none; stroke: #333; stroke-width: 2; }
-      .bjt-arrow { fill: #333; stroke: #333; stroke-width: 1.5; }
-      .title { font-size: 16px; font-weight: bold; fill: #113c60; text-anchor: middle; }
+      .label { font-size: 13px; fill: #113c60; }
+      .value { font-size: 13px; font-weight: bold; fill: #b85c2c; }
+      .current { font-size: 12px; font-weight: bold; fill: #178875; }
+      .title { font-size: 17px; font-weight: bold; fill: #113c60; text-anchor: middle; }
       .subtitle { font-size: 12px; fill: #546d83; text-anchor: middle; }
     </style>
   </defs>
 
-  <!-- Title -->
-  <text x="360" y="30" class="title">วงจรขยาย Common-Emitter แบบ Voltage-Divider Bias (NPN)</text>
-  <text x="360" y="50" class="subtitle">Lab 02 · ENG29 2121 · VCC = 12 V · R1 = 100 kΩ · R2 = 22 kΩ · RC = 2.2 kΩ · RE = 1 kΩ · β = 100 · VBE = 0.70 V</text>
+  <!-- ===== หัวข้อ ===== -->
+  <text x="400" y="28" class="title">วงจรขยาย Common-Emitter แบบ Voltage-Divider Bias (NPN)</text>
+  <text x="400" y="48" class="subtitle">Lab 03 · ENG29 2121 · แบบจำลอง Forward-Active (β และ VBE คงที่)</text>
 
-  <!-- VCC rail -->
-  <line x1="80" y1="100" x2="640" y2="100" class="wire"/>
-  <text x="80" y="120" class="label">VCC = 12 V</text>
-  <text x="640" y="120" class="label">VCC = 12 V</text>
+  <!-- ===== ราง VCC ===== -->
+  <line x1="90" y1="90" x2="710" y2="90" class="wire"/>
+  <circle cx="180" cy="90" r="5" class="node"/>
+  <circle cx="520" cy="90" r="5" class="node"/>
+  <text x="90" y="80" class="label" text-anchor="start">VCC = 12 V</text>
 
-  <!-- R1: VCC to Base -->
-  <line x1="80" y1="100" x2="200" y2="100" class="wire"/>
-  <rect x="200" y="85" width="60" height="30" fill="none" stroke="#333" stroke-width="2"/>
-  <text x="230" y="78" class="value">R1</text>
-  <text x="230" y="102" class="value">100 kΩ</text>
-  <line x1="260" y1="100" x2="260" y2="200" class="wire"/>
+  <!-- ===== R1: VCC ลงไปที่ Base (สาขาซ้าย) ===== -->
+  <line x1="180" y1="90" x2="180" y2="110" class="wire"/>
+  <rect x="170" y="110" width="20" height="60" class="dev"/>
+  <line x1="180" y1="170" x2="180" y2="240" class="wire"/>
+  <text x="152" y="136" class="value" text-anchor="end">R1</text>
+  <text x="152" y="153" class="value" text-anchor="end">100 kΩ</text>
 
-  <!-- R2: Base to Ground -->
-  <line x1="260" y1="200" x2="260" y2="320" class="wire"/>
-  <rect x="240" y="300" width="40" height="30" fill="none" stroke="#333" stroke-width="2" transform="rotate(90 260 315)"/>
-  <text x="260" y="345" class="value">R2</text>
-  <text x="260" y="362" class="value">22 kΩ</text>
-  <line x1="260" y1="330" x2="300" y2="330" class="wire"/>
+  <!-- ===== โหนด Base ===== -->
+  <circle cx="180" cy="240" r="5" class="node"/>
+  <text x="205" y="264" class="label">VB</text>
+  <text x="250" y="230" class="current">IB →</text>
 
-  <!-- Ground symbol at bottom of R2 -->
-  <line x1="300" y1="330" x2="300" y2="350" class="wire"/>
-  <line x1="280" y1="350" x2="320" y2="350" class="wire"/>
-  <line x1="290" y1="355" x2="310" y2="355" class="wire"/>
+  <!-- ===== R2: Base ลงกราวด์ ===== -->
+  <line x1="180" y1="240" x2="180" y2="270" class="wire"/>
+  <rect x="170" y="270" width="20" height="60" class="dev"/>
+  <line x1="180" y1="330" x2="180" y2="395" class="wire"/>
+  <text x="152" y="296" class="value" text-anchor="end">R2</text>
+  <text x="152" y="313" class="value" text-anchor="end">22 kΩ</text>
+  <line x1="158" y1="395" x2="202" y2="395" class="wire"/>
+  <line x1="166" y1="402" x2="194" y2="402" class="wire"/>
+  <line x1="174" y1="409" x2="186" y2="409" class="wire"/>
 
-  <!-- Base node -->
-  <circle cx="260" cy="200" r="6" class="node"/>
-  <text x="260" y="185" class="label">Base</text>
+  <!-- ===== สาย Base เข้าสู่ทรานซิสเตอร์ ===== -->
+  <line x1="180" y1="240" x2="374" y2="240" class="wire"/>
 
-  <!-- RC: VCC to Collector -->
-  <line x1="520" y1="100" x2="480" y2="100" class="wire"/>
-  <rect x="440" y="85" width="60" height="30" fill="none" stroke="#333" stroke-width="2"/>
-  <text x="470" y="78" class="value">RC</text>
-  <text x="470" y="102" class="value">2.2 kΩ</text>
-  <line x1="440" y1="100" x2="440" y2="220" class="wire"/>
+  <!-- ===== สัญลักษณ์ BJT มาตรฐาน (วงกลมเดียว + แท่ง Base) ===== -->
+  <circle cx="400" cy="250" r="44" class="dev"/>
+  <line x1="374" y1="228" x2="374" y2="272" class="dev"/>
 
-  <!-- BJT -->
-  <!-- Base connection -->
-  <line x1="260" y1="200" x2="300" y2="220" class="wire"/>
+  <!-- ขา Collector -->
+  <line x1="382" y1="234" x2="432" y2="190" class="lead"/>
+  <line x1="432" y1="190" x2="520" y2="190" class="wire"/>
 
-  <!-- Collector -->
-  <circle cx="440" cy="220" r="28" fill="none" stroke="#333" stroke-width="2"/>
-  <line x1="440" y1="220" x2="440" y2="248" class="wire"/>
+  <!-- ขา Emitter + ลูกศรออก (NPN) -->
+  <line x1="382" y1="266" x2="432" y2="310" class="lead"/>
+  <line x1="398" y1="280" x2="416" y2="295" class="lead" marker-end="url(#arrow)"/>
+  <line x1="432" y1="310" x2="520" y2="310" class="wire"/>
 
-  <!-- Emitter -->
-  <circle cx="300" cy="300" r="28" fill="none" stroke="#333" stroke-width="2"/>
-  <line x1="300" y1="300" x2="300" y2="328" class="wire"/>
+  <!-- ===== RC: VCC ลงไปที่ Collector (สาขาขวา) ===== -->
+  <line x1="520" y1="90" x2="520" y2="110" class="wire"/>
+  <rect x="510" y="110" width="20" height="52" class="dev"/>
+  <line x1="520" y1="162" x2="520" y2="190" class="wire"/>
+  <circle cx="520" cy="190" r="5" class="node"/>
+  <text x="548" y="130" class="value" text-anchor="start">RC</text>
+  <text x="548" y="147" class="value" text-anchor="start">2.2 kΩ</text>
 
-  <!-- RE: Emitter to Ground -->
-  <line x1="300" y1="328" x2="300" y2="350" class="wire"/>
-  <rect x="280" y="330" width="40" height="30" fill="none" stroke="#333" stroke-width="2" transform="rotate(90 300 345)"/>
-  <text x="300" y="375" class="value">RE</text>
-  <text x="300" y="392" class="value">1 kΩ</text>
+  <!-- ===== RE: Emitter ลงกราวด์ (คนละตำแหน่งกับกราวด์ R2) ===== -->
+  <circle cx="520" cy="310" r="5" class="node"/>
+  <line x1="520" y1="310" x2="520" y2="330" class="wire"/>
+  <rect x="510" y="330" width="20" height="52" class="dev"/>
+  <line x1="520" y1="382" x2="520" y2="405" class="wire"/>
+  <text x="548" y="350" class="value" text-anchor="start">RE</text>
+  <text x="548" y="367" class="value" text-anchor="start">1 kΩ</text>
+  <line x1="498" y1="405" x2="542" y2="405" class="wire"/>
+  <line x1="506" y1="412" x2="534" y2="412" class="wire"/>
+  <line x1="514" y1="419" x2="526" y2="419" class="wire"/>
 
-  <!-- Ground symbol at RE -->
-  <line x1="300" y1="392" x2="300" y2="412" class="wire"/>
-  <line x1="280" y1="412" x2="320" y2="412" class="wire"/>
-  <line x1="290" y1="417" x2="310" y2="417" class="wire"/>
+  <!-- ===== ป้ายแรงดันที่โหนด ===== -->
+  <text x="495" y="178" class="label" text-anchor="end">VC</text>
+  <text x="495" y="302" class="label" text-anchor="end">VE</text>
 
-  <!-- BJT labels -->
-  <text x="340" y="210" class="label">Q1</text>
-  <text x="340" y="228" class="label">NPN</text>
-  <text x="340" y="246" class="value">β = 100</text>
+  <!-- ===== ป้ายทรานซิสเตอร์ (อยู่นอกวงกลม ด้านซ้าย) ===== -->
+  <text x="336" y="264" class="label" text-anchor="end">Q1</text>
+  <text x="336" y="281" class="label" text-anchor="end">NPN</text>
+  <text x="336" y="298" class="value" text-anchor="end">β = 100</text>
 
-  <!-- Voltage labels -->
-  <text x="420" y="185" class="label">VC</text>
-  <text x="300" y="360" class="label">VE</text>
-  <text x="280" y="215" class="label">VB</text>
+  <!-- ===== ป้ายกระแส ===== -->
+  <text x="548" y="184" class="current" text-anchor="start">IC ↓</text>
+  <text x="548" y="398" class="current" text-anchor="start">IE ↓</text>
 
-  <!-- Arrows for current -->
-  <text x="540" y="220" class="label">IC ↓</text>
-  <text x="360" y="315" class="label">IE ↓</text>
-
-  <!-- Notes -->
-  <text x="360" y="390" class="subtitle">แบบจำลอง Forward-Active (β และ VBE คงที่)</text>
+  <!-- ===== หมายเหตุล่าง ===== -->
+  <text x="400" y="452" class="subtitle">ค่าความต้านทานในรูปเป็นค่าตัวอย่าง · ค่าที่ใช้คำนวณจริงตามที่กรอกในฟอร์ม</text>
 </svg>
