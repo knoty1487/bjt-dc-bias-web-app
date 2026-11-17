@@ -121,7 +121,17 @@ VCE = 8.032779 V
 | A4 เปลี่ยนค่าเดียว | Emitter · RE=2 kΩ (ที่เหลือเท่า A3) | IC ลดลง · 0.94010 mA · VCE 8.03278 V | IC **0.940 mA** (ลดจาก 1.026) · VCE **8.033 V** | OpenCode Browser | **PASS** |
 | A5 อินพุตผิด | Fixed · RB=0 | แจ้งแก้ RB, ไม่ล่ม, ไม่โชว์ผลเก่า | ข้อความ **"RB ต้องมากกว่า 0 Ω"**, ไม่มีตารางผล | OpenCode Browser | **PASS** |
 
-หลักฐานหน้าเว็บ A5: `docs/evidence/A5-fixed-invalid.png`
+หลักฐานหน้าเว็บ (full-page screenshot จาก OpenCode Browser):
+`docs/evidence/A1-browser.png`, `A2-browser.png`, `A3-browser.png`,
+`A4-browser.png`, `A5-browser.png` และ `A5-fixed-invalid.png` (จากรอบก่อน)
+
+### บั๊กที่พบและแก้ระหว่างรันจริง
+
+ตอนเลือกโหมดแล้วกด "เปลี่ยนโหมด / โหลดฟอร์มใหม่" ตอนช่องยังว่าง **ไม่เกิด POST**
+เพราะปุ่มเป็น `type="submit"` แต่ทุกช่องมี `required` → browser บล็อกการ submit
+แก้โดยเติม `formnovalidate` ที่ปุ่ม (`templates/index.html`) พร้อม regression test
+`test_change_mode_button_skips_required_field_validation` (`tests/test_web.py`)
+หลังแก้ รัน A1–A5 ใหม่ผ่าน Browser ได้ครบ และผลยังตรงค่าอ้างอิงเดิมทุกกรณี
 
 ข้อสังเกตขณะตรวจ:
 - หลังเลือกโหมดและกด "เปลี่ยนโหมด / โหลดฟอร์มใหม่" ฟอร์มจะโหลดใหม่ให้เห็นเฉพาะช่องที่ใช้
@@ -133,11 +143,12 @@ VCE = 8.032779 V
 
 ```
 .venv\Scripts\python.exe -m unittest discover -s tests -v
-Ran 30 tests ... OK
+Ran 31 tests ... OK
 ```
 
 เพิ่มจาก Lab 02: unit test ของ Fixed/Emitter (ค่าอ้างอิง, validation, cutoff,
-saturation, A4) และ HTTP test ของโหมดใหม่ (mode ไม่รู้จัก, RB=0, เปลี่ยนโหมด)
+saturation, A4) และ HTTP test ของโหมดใหม่ (mode ไม่รู้จัก, RB=0, เปลี่ยนโหมด,
+ปุ่มเปลี่ยนโหมดข้าม required field validation)
 
 ## 9. บทบาท MCP (อธิบายเพิ่ม)
 

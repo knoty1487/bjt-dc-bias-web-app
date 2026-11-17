@@ -1,5 +1,6 @@
 """HTTP tests for the Flask application using the Flask test client."""
 
+import re
 import unittest
 
 from app import app
@@ -147,6 +148,16 @@ class NewModeWebTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("DC Bias Results", html)
         self.assertIn('value="fixed" selected', html)
+
+    def test_change_mode_button_skips_required_field_validation(self):
+        response = self.client.get("/")
+        html = response.get_data(as_text=True)
+        self.assertIn('value="change_mode"', html)
+        change_mode_button = next(
+            tag for tag in re.findall(r"<button\b[^>]*>", html)
+            if 'value="change_mode"' in tag
+        )
+        self.assertIn("formnovalidate", change_mode_button)
 
 
 if __name__ == "__main__":
