@@ -154,6 +154,26 @@ class ModeWebTests(unittest.TestCase):
         self.assertIn('name="re"', html)
         self.assertNotIn('name="r1"', html)
 
+    def test_fixed_mode_has_circuit_diagram(self):
+        html = self.client.post(
+            "/calculate", data={"mode": "fixed", "action": "change_mode"}
+        ).get_data(as_text=True)
+        self.assertIn("<svg", html)
+        self.assertIn('id="c-rb"', html)
+        self.assertIn('id="c-rc"', html)
+        self.assertNotIn('id="c-r1"', html)
+        self.assertNotIn('id="c-re"', html)
+
+    def test_emitter_mode_has_circuit_diagram(self):
+        html = self.client.post(
+            "/calculate", data={"mode": "emitter", "action": "change_mode"}
+        ).get_data(as_text=True)
+        self.assertIn("<svg", html)
+        self.assertIn('id="c-rb"', html)
+        self.assertIn('id="c-re"', html)
+        self.assertIn('id="c-rc"', html)
+        self.assertNotIn('id="c-r1"', html)
+
     def test_fixed_mode_calculates_from_backend(self):
         data = {"mode": "fixed", "action": "calculate", "vcc": "12",
                 "rb": "1000", "rc": "2.2", "beta": "100", "vbe": "0.7",
