@@ -10,8 +10,8 @@ Lab 03 — ENG29 2121 (2/2569): Flask Web Application สำหรับคำ�
 ## GitHub / Commit
 
 - Repository: <https://github.com/ottoponrod/BJT-DC-Bias-Web-App>
-- Commit SHA: `__COMMIT_SHA__` (commit ที่เพิ่มโหมด Fixed/Emitter, เทสต์,
-  หลักฐาน A1–A5 และเอกสารชุดนี้)
+- Commit SHA: `24f157f079127c860e21d92818c164fdaf9b7762` (commit ที่เพิ่มโหมด
+  Fixed/Emitter, เทสต์, หลักฐาน A1–A5 และเอกสารชุดนี้)
 
 ## ความต้องการของระบบ
 
