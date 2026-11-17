@@ -1,11 +1,16 @@
-# Validation — BJT DC Bias Web App (Lab 02)
+# Validation — BJT DC Bias Web App (Lab 03)
 
-## 1. ชุดทดสอบอ้างอิง
+เว็บแอปรองรับ 3 โหมดไบอัส: **Voltage Divider**, **Fixed Bias** และ
+**Emitter Bias** โดยทุกโหมดใช้แบบจำลอง Forward-Active (β และ VBE คงที่)
+และแปลงหน่วยตัวต้านทานที่จุดรับข้อมูลครั้งเดียว (kΩ × 1000 = Ω)
 
-ค่าอุปกรณ์: VCC = 12 V, R1 = 100 kΩ, R2 = 22 kΩ, RC = 2.2 kΩ, RE = 1 kΩ,
-β = 100, VBE = 0.70 V
+## 1. ค่าอ้างอิงที่คำนวณด้วยมือ
 
-คำนวณด้วยมือ (Forward-Active):
+ค่ากลางที่ทุกโหมดใช้ร่วมกัน: VCC = 12 V, RC = 2.2 kΩ, β = 100, VBE = 0.70 V
+
+### 1.1 Voltage Divider Bias (A1)
+
+R1 = 100 kΩ, R2 = 22 kΩ, RE = 1 kΩ
 
 | ปริมาณ | สมการ | ค่า |
 |---|---|---|
@@ -21,35 +26,87 @@
 
 Region: **Active** (VCE = 8.05 V > 1.0 V)
 
-ผลจากเว็บ (POST /calculate ด้วยค่าเดียวกัน) ตรงกับตารางข้างต้นที่ตำแหน่งทศนิยม 3 ตำแหน่ง
-และถูกตรวจซ้ำโดย `tests/test_dc_bias.py::ActiveRegionTests::test_reference_values`
+### 1.2 Fixed Bias (A2) — ค่าอ้างอิงอิสระของโหมดใหม่
 
-## 2. กรณีทดสอบอื่นที่ระบบรองรับ
+RB = 1 MΩ = 1,000 kΩ = 1,000,000 Ω, ไม่มี RE (VE = 0 V)
 
-| กรณี | เงื่อนไข | ผลที่คาดหวัง |
+| ปริมาณ | สมการ | ค่า |
 |---|---|---|
-| Cutoff | VTH ≤ VBE | `region = cutoff`, IB = IC = IE = 0, VE = 0, VB = VTH, VC = VCE = VCC + warning |
-| Saturation | VCE ≤ 0.3 V | `region = saturation` + warning ว่า Forward-Active ใช้ไม่ได้ |
-| Near-saturation | 0.3 V < VCE < 1.0 V | `region = near-saturation` + warning ให้ตรวจสอบซ้ำ |
-| ค่าผิด | R ≤ 0, β ≤ 0, VCC ≤ 0, VBE ≤ 0 หรือ VBE ≥ VCC | ข้อความ error ภาษาไทย, HTTP 200, หน้าเว็บไม่ล้ม |
-| ข้อมูลไม่ครบ/ไม่ใช่ตัวเลข | ช่องว่าง หรือ `abc`, `1,000` | ข้อความ error ภาษาไทย, HTTP 200 |
+| IB | (VCC−VBE)/RB = (12−0.70)/1,000,000 | 11.3000 µA |
+| IC | β·IB = 100 × 11.3000 µA | 1.1300 mA |
+| IE | (β+1)·IB = 101 × 11.3000 µA | 1.1413 mA |
+| VE | 0 (อิมิตเตอร์ต่อลงกราวด์) | 0.000 V |
+| VB | VE+VBE | 0.700 V |
+| VC | VCC−IC·RC = 12 − 1.1300 mA × 2.2 kΩ | 9.5140 V |
+| VCE | VC−VE | 9.5140 V |
+
+### 1.3 Emitter Bias (A3, A4)
+
+RB = 1 MΩ, RC = 2.2 kΩ
+
+| ปริมาณ | A3: RE = 1 kΩ | A4: RE = 2 kΩ |
+|---|---|---|
+| IB | (12−0.70)/(1,000,000 + 101×1,000) = 10.2634 µA | (12−0.70)/(1,000,000 + 101×2,000) = 9.4010 µA |
+| IC | 1.02634 mA | 0.94010 mA |
+| IE | 1.03660 mA | 0.94950 mA |
+| VE | 1.03660 V | 1.89900 V |
+| VC | 9.74205 V | 9.93178 V |
+| VCE | 8.70545 V | 8.03278 V |
+
+**คำทำนาย A4:** เมื่อ RE เพิ่มจาก 1 kΩ เป็น 2 kΩ ตัวหาร
+`RB + (β+1)RE` โตขึ้น ทำให้ IB และ IC **ลดลง** (ไม่ใช่เพิ่มขึ้น)
+ผลจริงบนเว็บลดจาก 1.026 mA เป็น 0.940 mA ตรงกับคำทำนาย
+
+## 2. ผลตรวจ A1–A5 ด้วยเบราว์เซอร์จริง
+
+เครื่องมือ: OpenCode Browser (Chromium) เปิด <http://127.0.0.1:5000/>
+กรอกค่าผ่านฟอร์มจริง กดปุ่ม Calculate DC Bias และอ่านค่าจากตารางผลลัพธ์
+ทุกกรณีเป็น HTTP 200 และหน้าเว็บไม่ล้ม
+
+| # | โหมด / อินพุต | IC ที่คาดหวัง | IC จริง | VCE ที่คาดหวัง | VCE จริง | ผล | หลักฐาน |
+|---|---|---|---|---|---|---|---|
+| A1 | Divider: R1=100 kΩ, R2=22 kΩ, RE=1 kΩ | 1.230 mA | **1.230 mA** | 8.052 V | **8.052 V** | ผ่าน | `docs/evidence/lab03/A1-divider.jpg` |
+| A2 | Fixed: RB=1000 kΩ (1 MΩ), ไม่กรอก RE | 1.130 mA | **1.130 mA** | 9.514 V | **9.514 V** | ผ่าน | `docs/evidence/lab03/A2-fixed.jpg` |
+| A3 | Emitter: RB=1000 kΩ, RE=1 kΩ | 1.026 mA | **1.026 mA** | 8.705 V | **8.705 V** | ผ่าน | `docs/evidence/lab03/A3-emitter-re1k.jpg` |
+| A4 | Emitter: เหมือน A3 แต่ RE=2 kΩ | 0.940 mA | **0.940 mA** | 8.033 V | **8.033 V** | ผ่าน (IC ลดลงตามคำทำนาย) | `docs/evidence/lab03/A4-emitter-re2k.jpg` |
+| A5 | Fixed: RB=0 | error `RB ต้องมากกว่า 0 Ω` | **`RB ต้องมากกว่า 0 Ω`** | ไม่แสดงผล | ไม่มีตารางผล/แบนเนอร์ | ผ่าน | `docs/evidence/lab03/A5-fixed-rb0-error.jpg` |
+
+ค่าความคลาดเคลื่อนสูงสุดที่ยอมรับ: |ΔIC| ≤ 0.01 mA และ |ΔVCE| ≤ 0.02 V
+ผลจริงตรงกับค่าอ้างอิงที่ตำแหน่งทศนิยม 3 ตำแหน่งทุกกรณี (Δ = 0.000)
+
+### 2.1 สิ่งที่ตรวจเพิ่มในเบราว์เซอร์
+
+- ฟอร์มเปลี่ยนช่องตามโหมด: Fixed แสดงเฉพาะ `rb` (ไม่มี `r1`, `r2`, `re`)
+  และ Emitter แสดง `rb` + `re` (ไม่มี `r1`, `r2`)
+- ปุ่ม **เปลี่ยนโหมด** มี `formnovalidate` ทำให้สลับโหมดได้แม้ช่องอื่นว่าง
+  (แก้ regression ที่ปุ่มถูก HTML required บล็อก)
+- A5: หลังส่ง RB=0 หน้าเว็บแสดงเฉพาะข้อความ error ไม่มีตารางหรือแบนเนอร์
+  ของผลรอบก่อนค้างอยู่
+- หน่วย Ω ใช้ได้กับทุกโหมด: กรอก RB=1000000, RC=2200, unit=Ω ให้ผลเท่ากับ
+  การกรอกหน่วย kΩ
 
 ## 3. ผลการทดสอบอัตโนมัติ
 
 คำสั่ง: `python -m unittest discover -s tests -v`
 
 ```
-Ran 24 tests in 0.016s
+Ran 48 tests in 0.075s
 
 OK
 ```
 
-- `tests/test_dc_bias.py` — 13 tests (ค่าอ้างอิง, validation, cutoff/saturation/near-saturation, boundary, ค่ามากผิดปกติ, NaN/∞)
-- `tests/test_web.py` — 11 tests (GET ฟอร์ม, POST ผลลัพธ์, error cases, หน่วย Ω, stylesheet, warning)
+- `tests/test_dc_bias.py` — 22 tests: ค่าอ้างอิง Divider เดิม, validation,
+  cutoff/saturation/near-saturation, NaN/∞, โหมด Fixed/Emitter (ค่าอ้างอิง,
+  RE มากขึ้นทำให้ IC ลดลง, RB/RE ≤ 0, cutoff)
+- `tests/test_web.py` — 26 tests: GET/POST เดิมทั้งหมด, mode selector,
+  การสลับโหมด, `formnovalidate`, ผล Fixed/Emitter จาก Flask, หน่วย Ω,
+  โหมดที่ไม่รู้จัก, error RB=0 โดยไม่มีผลค้าง
 
 ## 4. ข้อจำกัดของแบบจำลอง
 
 - ใช้ Forward-Active Approximation: β คงที่, VBE คงที่, ไม่คิด Early effect
 - ไม่ใช่ ngspice/SPICE — ค่าที่ได้เป็นผลของสมการมือ ไม่ใช่ผลจำลองวงจรจริง
-- เมื่อ VTH ≤ VBE (cutoff) หรือ VCE ≤ 0.3 V (saturation) แบบจำลองนี้ใช้ไม่ได้
-  ระบบจะแสดง warning และ (ในกรณี cutoff) รายงานสภาวะ OFF ตามอุดมคติแทนค่าจากสมการ
+- Fixed bias ไม่มี RE จึงไวต่อ β มาก (IC = β·IB) และอาจอิ่มตัวง่ายกว่าโหมดอื่น
+- เมื่อ VTH ≤ VBE (Divider) หรือ VCC ≤ VBE (Fixed/Emitter) ระบบรายงาน
+  cutoff; เมื่อ VCE ≤ 0.3 V รายงาน saturation พร้อม warning ว่าแบบจำลอง
+  Forward-Active ใช้ไม่ได้

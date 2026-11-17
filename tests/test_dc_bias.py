@@ -1,7 +1,17 @@
 import math
 import unittest
 
-from dc_bias import BiasInputs, ValidationError, calculate_dc_bias
+from dc_bias import (
+    MODE_DIVIDER,
+    MODE_EMITTER,
+    MODE_FIXED,
+    MODES,
+    BiasInputs,
+    ValidationError,
+    calculate_dc_bias,
+    calculate_emitter_bias,
+    calculate_fixed_bias,
+)
 
 SAMPLE = dict(vcc=12.0, r1=100_000.0, r2=22_000.0, rc=2_200.0,
               re=1_000.0, beta=100.0, vbe=0.70)
@@ -106,6 +116,82 @@ class RegionTests(unittest.TestCase):
                 with self.assertRaises(ValidationError):
                     calculate_dc_bias(
                         BiasInputs(**{**SAMPLE, field: bad}))
+
+
+class NewBiasModesTests(unittest.TestCase):
+    """Lab 03: Fixed bias and Emitter bias (single supply)."""
+
+    def test_modes_are_declared(self):
+        self.assertEqual(MODES, (MODE_DIVIDER, MODE_FIXED, MODE_EMITTER))
+
+    def test_divider_result_is_tagged_with_mode(self):
+        result = calculate_dc_bias(BiasInputs(**SAMPLE))
+        self.assertEqual(result.mode, MODE_DIVIDER)
+
+    def test_fixed_bias_reference(self):
+        result = calculate_fixed_bias(
+            vcc=12.0, rb=1_000_000.0, rc=2_200.0, beta=100.0, vbe=0.70)
+        self.assertEqual(result.mode, MODE_FIXED)
+        self.assertEqual(result.region, "active")
+        self.assertAlmostEqual(result.ib * 1e6, 11.30, places=2)
+        self.assertAlmostEqual(result.ic * 1e3, 1.13000, places=4)
+        self.assertAlmostEqual(result.ie * 1e3, 1.14130, places=3)
+        self.assertAlmostEqual(result.ve, 0.0, places=6)
+        self.assertAlmostEqual(result.vb, 0.70, places=6)
+        self.assertAlmostEqual(result.vc, 9.514, places=3)
+        self.assertAlmostEqual(result.vce, 9.514, places=3)
+        self.assertIsNone(result.vth)
+        self.assertIsNone(result.rth)
+
+    def test_fixed_bias_rejects_zero_rb(self):
+        with self.assertRaises(ValidationError):
+            calculate_fixed_bias(
+                vcc=12.0, rb=0.0, rc=2_200.0, beta=100.0, vbe=0.70)
+
+    def test_fixed_bias_cutoff_when_vcc_not_above_vbe(self):
+        result = calculate_fixed_bias(
+            vcc=0.70, rb=1_000_000.0, rc=2_200.0, beta=100.0, vbe=0.70)
+        self.assertEqual(result.region, "cutoff")
+        self.assertEqual(result.ic, 0.0)
+
+    def test_emitter_bias_reference_re_1k(self):
+        result = calculate_emitter_bias(
+            vcc=12.0, rb=1_000_000.0, re=1_000.0, rc=2_200.0,
+            beta=100.0, vbe=0.70)
+        self.assertEqual(result.mode, MODE_EMITTER)
+        self.assertEqual(result.region, "active")
+        self.assertAlmostEqual(result.ib * 1e6, 10.2634, places=3)
+        self.assertAlmostEqual(result.ic * 1e3, 1.02634, places=4)
+        self.assertAlmostEqual(result.vce, 8.70545, places=3)
+        self.assertIsNone(result.vth)
+        self.assertIsNone(result.rth)
+
+    def test_emitter_bias_larger_re_reduces_ic(self):
+        re_1k = calculate_emitter_bias(
+            vcc=12.0, rb=1_000_000.0, re=1_000.0, rc=2_200.0,
+            beta=100.0, vbe=0.70)
+        re_2k = calculate_emitter_bias(
+            vcc=12.0, rb=1_000_000.0, re=2_000.0, rc=2_200.0,
+            beta=100.0, vbe=0.70)
+        self.assertLess(re_2k.ic, re_1k.ic)
+        self.assertAlmostEqual(re_2k.ic * 1e3, 0.94010, places=4)
+        self.assertAlmostEqual(re_2k.vce, 8.03278, places=3)
+
+    def test_emitter_bias_rejects_zero_re(self):
+        with self.assertRaises(ValidationError):
+            calculate_emitter_bias(
+                vcc=12.0, rb=1_000_000.0, re=0.0, rc=2_200.0,
+                beta=100.0, vbe=0.70)
+
+    def test_new_modes_reject_non_finite_inputs(self):
+        for bad in (float("nan"), float("inf")):
+            with self.assertRaises(ValidationError):
+                calculate_fixed_bias(
+                    vcc=bad, rb=1e6, rc=2_200.0, beta=100.0, vbe=0.70)
+            with self.assertRaises(ValidationError):
+                calculate_emitter_bias(
+                    vcc=12.0, rb=1e6, re=bad, rc=2_200.0,
+                    beta=100.0, vbe=0.70)
 
 
 if __name__ == "__main__":

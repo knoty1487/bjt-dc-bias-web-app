@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var RESISTOR_FIELDS = ["r1", "r2", "rc", "re"];
+  var RESISTOR_FIELDS = ["r1", "r2", "rb", "rc", "re"];
 
   function unitLabel() {
     var select = document.getElementById("unit");
