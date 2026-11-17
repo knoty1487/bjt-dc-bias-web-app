@@ -11,8 +11,11 @@ from dc_bias import (
     REGION_ACTIVE,
     REGION_CUTOFF,
     REGION_SATURATION,
+    VCE_SAT,
     InvalidInputError,
     calculate_dc_bias,
+    calculate_emitter_bias,
+    calculate_fixed_bias,
 )
 
 VCC = 12.0
@@ -79,6 +82,58 @@ class OperatingRegionTest(unittest.TestCase):
         self.assertEqual(result.region, REGION_SATURATION)
         self.assertGreater(len(result.warnings), 0)
         self.assertLessEqual(result.vce, 0.2)
+
+
+class NewBiasModesTest(unittest.TestCase):
+    """Lab 03: independent hand calculations for fixed and emitter bias."""
+
+    def test_fixed_bias_reference(self):
+        result = calculate_fixed_bias(12.0, 1e6, 2.2e3, 100.0, 0.70)
+        self.assertAlmostEqual(result.ib * 1e6, 11.30, places=2)
+        self.assertAlmostEqual(result.ic * 1e3, 1.13, places=3)
+        self.assertAlmostEqual(result.ve, 0.0)
+        self.assertAlmostEqual(result.vb, 0.70)
+        self.assertAlmostEqual(result.vc, 9.514, places=3)
+        self.assertAlmostEqual(result.vce, 9.514, places=3)
+        self.assertEqual(result.region, REGION_ACTIVE)
+        self.assertIsNone(result.vth)
+
+    def test_emitter_bias_reference(self):
+        result = calculate_emitter_bias(12.0, 1e6, 1e3, 2.2e3, 100.0, 0.70)
+        self.assertAlmostEqual(result.ib * 1e6, 10.2634, places=3)
+        self.assertAlmostEqual(result.ic * 1e3, 1.02634, places=4)
+        self.assertAlmostEqual(result.ie * 1e3, 1.03660, places=4)
+        self.assertAlmostEqual(result.ve, 1.03660, places=4)
+        self.assertAlmostEqual(result.vb, 1.73660, places=4)
+        self.assertAlmostEqual(result.vc, 9.74205, places=4)
+        self.assertAlmostEqual(result.vce, 8.70545, places=4)
+        self.assertEqual(result.region, REGION_ACTIVE)
+
+    def test_larger_emitter_resistor_reduces_ic(self):
+        small = calculate_emitter_bias(12.0, 1e6, 1e3, 2.2e3, 100.0, 0.70)
+        large = calculate_emitter_bias(12.0, 1e6, 2e3, 2.2e3, 100.0, 0.70)
+        self.assertAlmostEqual(large.ic * 1e3, 0.94010, places=4)
+        self.assertAlmostEqual(large.vce, 8.03278, places=4)
+        self.assertLess(large.ic, small.ic)
+
+    def test_fixed_bias_rejects_zero_rb(self):
+        with self.assertRaises(InvalidInputError):
+            calculate_fixed_bias(12.0, 0.0, 2.2e3, 100.0, 0.70)
+
+    def test_emitter_bias_rejects_zero_re(self):
+        with self.assertRaises(InvalidInputError):
+            calculate_emitter_bias(12.0, 1e6, 0.0, 2.2e3, 100.0, 0.70)
+
+    def test_cutoff_when_vcc_not_above_vbe(self):
+        result = calculate_fixed_bias(0.60, 1e6, 2.2e3, 100.0, 0.70)
+        self.assertEqual(result.region, REGION_CUTOFF)
+        self.assertAlmostEqual(result.ic, 0.0)
+        self.assertGreater(len(result.warnings), 0)
+
+    def test_saturation_flagged_for_small_rc(self):
+        result = calculate_fixed_bias(12.0, 10e3, 100e3, 100.0, 0.70)
+        self.assertEqual(result.region, REGION_SATURATION)
+        self.assertLessEqual(result.vce, VCE_SAT)
 
 
 if __name__ == "__main__":

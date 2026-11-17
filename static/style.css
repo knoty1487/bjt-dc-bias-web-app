@@ -131,6 +131,22 @@ button:hover {
   background: #15516f;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+button.secondary {
+  background: #edf4f9;
+  color: #15516f;
+  border: 1px solid #9dbdd4;
+}
+
+button.secondary:hover {
+  background: #dbeaf4;
+}
+
 .region {
   margin: 4px 0 14px;
   font-size: 1.02rem;

@@ -98,5 +98,56 @@ class WebAppTest(unittest.TestCase):
         self.assertIn("ใช้ไม่ได้", html)
 
 
+class NewModeWebTest(unittest.TestCase):
+    def setUp(self):
+        app.config["TESTING"] = True
+        self.client = app.test_client()
+
+    def test_fixed_mode_returns_backend_result(self):
+        data = {"vcc": "12", "rc": "2.2", "unit_rc": "kohm", "beta": "100",
+                "vbe": "0.7", "mode": "fixed", "rb": "1000", "unit_rb": "kohm"}
+        response = self.client.post("/calculate", data=data)
+        html = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Fixed Bias", html)
+        self.assertIn("1.130", html)
+        self.assertIn("9.514", html)
+        self.assertNotIn("VTH", html)
+
+    def test_emitter_mode_returns_backend_result(self):
+        data = {"vcc": "12", "rc": "2.2", "unit_rc": "kohm", "beta": "100",
+                "vbe": "0.7", "mode": "emitter", "rb": "1000", "unit_rb": "kohm",
+                "re": "1", "unit_re": "kohm"}
+        response = self.client.post("/calculate", data=data)
+        html = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Emitter Bias", html)
+        self.assertIn("1.026", html)
+        self.assertIn("8.705", html)
+
+    def test_unknown_mode_is_rejected(self):
+        data = dict(FORM_DATA, mode="bogus")
+        response = self.client.post("/calculate", data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("โหมดไม่ถูกต้อง", response.get_data(as_text=True))
+
+    def test_zero_rb_shows_error_without_stale_result(self):
+        data = {"vcc": "12", "rc": "2.2", "unit_rc": "kohm", "beta": "100",
+                "vbe": "0.7", "mode": "fixed", "rb": "0", "unit_rb": "kohm"}
+        response = self.client.post("/calculate", data=data)
+        html = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("RB ต้องมากกว่า 0", html)
+        self.assertNotIn("DC Bias Results", html)
+
+    def test_change_mode_reloads_form_without_calculating(self):
+        data = {"mode": "fixed", "action": "change_mode", "vcc": "12"}
+        response = self.client.post("/calculate", data=data)
+        html = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("DC Bias Results", html)
+        self.assertIn('value="fixed" selected', html)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -62,3 +62,89 @@ OK
 - ใช้ β และ VBE คงที่ (Forward-Active approximation) ไม่ใช่ SPICE
 - ค่า VCE ใกล้ 0.2 V หรือ VTH ≤ VBE ต้องอ่าน Warning ก่อนใช้ผล
 - ค่าที่อยู่นอก Forward-Active ไม่ถือเป็นผลที่เชื่อถือได้
+
+---
+
+# Lab 03 — สามโหมดไบอัส
+
+## 6. ค่าอ้างอิงอิสระ (คำนวณมือก่อนรัน)
+
+ใช้ร่วมทุกกรณี: `VCC = 12 V, RC = 2.2 kΩ, β = 100, VBE = 0.70 V`
+
+### A1 · Voltage Divider (ค่าจาก Lab 2 เดิม)
+`R1 = 100 kΩ, R2 = 22 kΩ, RE = 1 kΩ`
+
+| ปริมาณ | คำนวณมือ | เกณฑ์ |
+|---|---|---|
+| IC | 1.22986 mA | ผลก่อนแก้ 1.229858 mA |
+| VCE | 8.05216 V | ผลก่อนแก้ 8.052155 V |
+
+### A2 · Fixed Bias
+`RB = 1 MΩ = 1000 kΩ`
+
+```
+IB = (12 − 0.70) / 1e6 = 11.30 µA
+IC = 100 × 11.30 µA = 1.13000 mA
+VE = 0 V, VB = 0.700 V
+VC = 12 − 1.130 mA × 2.2 kΩ = 9.514 V
+VCE = 9.514 − 0 = 9.514 V
+```
+
+### A3 · Emitter Bias
+`RB = 1 MΩ = 1000 kΩ, RE = 1 kΩ`
+
+```
+IB = 11.30 / (1e6 + 101 × 1e3) = 10.263397 µA
+IC = 1.026340 mA, IE = 1.036603 mA
+VE = 1.036603 V, VB = 1.736603 V
+VC = 9.742053 V, VCE = 8.705450 V
+```
+
+### A4 · เปลี่ยน RE เป็น 2 kΩ
+
+```
+IB = 11.30 / (1e6 + 101 × 2e3) = 9.400998 µA
+IC = 0.940100 mA (ลดลงจาก A3 เพราะตัวหารเพิ่มขึ้น)
+VCE = 8.032779 V
+```
+
+## 7. ผลตรวจ A1–A5 จาก Browser จริง
+
+วิธีตรวจ: **OpenCode Browser** (เครื่องมือ `browser_*` ใน OpenCode Desktop)
+เกณฑ์: |ΔIC| ≤ 0.01 mA, |ΔVCE| ≤ 0.02 V เทียบกับค่าอ้างอิงที่ยังไม่ปัดเศษ
+
+| กรณี | อินพุต | ค่าคาดหมาย | เห็นจริง | วิธีตรวจ | สถานะ |
+|---|---|---|---|---|---|
+| A1 โหมดเดิม | Divider · R1=100 kΩ, R2=22 kΩ, RE=1 kΩ | IC 1.22986 mA · VCE 8.05216 V | IC **1.230 mA** · VCE **8.052 V** | OpenCode Browser | **PASS** |
+| A2 Fixed | Fixed · RB=1000 kΩ | IC 1.13000 mA · VCE 9.51400 V | IC **1.130 mA** · VCE **9.514 V** | OpenCode Browser | **PASS** |
+| A3 Emitter | Emitter · RB=1000 kΩ, RE=1 kΩ | IC 1.02634 mA · VCE 8.70545 V | IC **1.026 mA** · VCE **8.705 V** | OpenCode Browser | **PASS** |
+| A4 เปลี่ยนค่าเดียว | Emitter · RE=2 kΩ (ที่เหลือเท่า A3) | IC ลดลง · 0.94010 mA · VCE 8.03278 V | IC **0.940 mA** (ลดจาก 1.026) · VCE **8.033 V** | OpenCode Browser | **PASS** |
+| A5 อินพุตผิด | Fixed · RB=0 | แจ้งแก้ RB, ไม่ล่ม, ไม่โชว์ผลเก่า | ข้อความ **"RB ต้องมากกว่า 0 Ω"**, ไม่มีตารางผล | OpenCode Browser | **PASS** |
+
+หลักฐานหน้าเว็บ A5: `docs/evidence/A5-fixed-invalid.png`
+
+ข้อสังเกตขณะตรวจ:
+- หลังเลือกโหมดและกด "เปลี่ยนโหมด / โหลดฟอร์มใหม่" ฟอร์มจะโหลดใหม่ให้เห็นเฉพาะช่องที่ใช้
+  (Fixed: RB, Emitter: RB+RE, Divider: R1+R2+RE) และลบผลรอบก่อนออกจากหน้า
+- ผล Fixed/Emitter ไม่แสดง VTH/RTH เพราะไม่มี Thevenin equivalent
+- การตรวจ A4 ต้องรันใหม่หลังเปลี่ยน RE เท่านั้น ค่า IC เปลี่ยนจริงจึงยืนยันว่า RE ไหลถึงสมการ
+
+## 8. Automated Tests (After Lab 03)
+
+```
+.venv\Scripts\python.exe -m unittest discover -s tests -v
+Ran 30 tests ... OK
+```
+
+เพิ่มจาก Lab 02: unit test ของ Fixed/Emitter (ค่าอ้างอิง, validation, cutoff,
+saturation, A4) และ HTTP test ของโหมดใหม่ (mode ไม่รู้จัก, RB=0, เปลี่ยนโหมด)
+
+## 9. บทบาท MCP (อธิบายเพิ่ม)
+
+- `browser-acceptance-check` (ถ้ามี) เป็น Skill ที่บอกว่าต้องตรวจอะไรและรายงานหลักฐานอะไร
+- **OpenCode Browser** คือเครื่องมือที่ใช้จริงในรอบนี้ (แทน Playwright MCP)
+  เป็นชั้นที่ OpenCode เรียกเพื่อเปิด URL/กรอกฟอร์ม/อ่าน snapshot จากหน้าเว็บ
+- เบราว์เซอร์คุยกับ Flask ด้วย HTTP (`POST /calculate`) แล้ว Flask เรียกฟังก์ชัน Python
+  ไม่ต้องติดตั้ง Playwright ใน `requirements.txt`
+- ข้อจำกัด: การอ่านโค้ดหรือส่ง curl **ไม่ถือว่า** เป็นการรัน browser case
+  จึงใช้ snapshot จากหน้าเว็บเป็นหลักฐานในการตัดสิน PASS/FAIL

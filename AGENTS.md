@@ -1,12 +1,14 @@
 # AGENTS.md — AI Coding Conventions
 
-แนวทางสำหรับ AI coding agent ที่ทำงานกับโปรเจกต์นี้ (ENG29 2121 Lab 02)
+แนวทางสำหรับ AI coding agent ที่ทำงานกับโปรเจกต์นี้ (ENG29 2121 Lab 02–03)
 
 ## กติกาหลัก
 
 1. **แยกความรับผิดชอบของไฟล์**
    - `dc_bias.py` เก็บเฉพาะสมการ DC Bias — ห้าม import Flask, HTML หรือ HTTP
-   - `app.py` จัดการ HTTP/validation/แปลงหน่วย แล้วเรียกฟังก์ชันใน `dc_bias.py`
+     (`calculate_dc_bias`, `calculate_fixed_bias`, `calculate_emitter_bias`)
+   - `app.py` จัดการ HTTP/validation/แปลงหน่วย/เลือกโหมด แล้วเรียกฟังก์ชันใน `dc_bias.py`
+     โหมดไม่รู้จักต้องแจ้ง Error ห้าม fallback เป็น Divider
    - `templates/index.html` ห้ามฝังสมการฟิสิกส์ — แสดงผลจาก context เท่านั้น
    - `static/style.css` ดูแลหน้าตาเท่านั้น (ไม่มี logic)
 

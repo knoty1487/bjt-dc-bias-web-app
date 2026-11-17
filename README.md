@@ -1,8 +1,9 @@
-# BJT DC Bias Web App — ENG29 2121 Lab 02
+# BJT DC Bias Web App — ENG29 2121 Lab 03
 
 Flask Web Application สำหรับคำนวณ **DC Operating Point** ของวงจรขยาย BJT
-Common-Emitter แบบ **Voltage-Divider Bias** (NPN) ด้วยแบบจำลอง
-Forward-Active Approximation (β และ VBE คงที่)
+Common-Emitter (NPN) ด้วยแบบจำลอง Forward-Active Approximation (β และ VBE คงที่)
+ต่อยอดจาก Lab 2 โดยเลือกได้ 3 โหมด: **Voltage Divider Bias**, **Fixed Bias**
+และ **Emitter Bias แบบแหล่งจ่ายเดียว** (ผล Divider เดิมไม่เปลี่ยน)
 
 ## โครงสร้างโปรเจกต์
 
@@ -19,8 +20,10 @@ Forward-Active Approximation (β และ VBE คงที่)
 │   └── test_web.py         # Flask HTTP route tests
 ├── docs/
 │   ├── design-note.md      # บันทึกการออกแบบ
-│   ├── validation.md       # การตรวจสอบผลกับค่าคำนวณอิสระ
-│   └── reflection.md       # สิ่งที่ได้เรียนรู้
+│   ├── validation.md       # ค่าอ้างอิงอิสระ + ตาราง A1–A5 (Lab 02/03)
+│   ├── evidence/           # หลักฐานจากหน้าเว็บ
+│   ├── reflection.md       # สิ่งที่ได้เรียนรู้
+│   └── superpowers/        # spec + plan ของ Lab 03
 ├── requirements.txt
 ├── AGENTS.md               # แนวทางสำหรับ AI coding agent
 └── README.md
@@ -64,23 +67,36 @@ python -m unittest discover -s tests -v
 
 ## แบบจำลองและสมการ
 
-ตัวแปรเข้า: `VCC [V]`, `R1, R2, RC, RE [Ω]` (เลือกหน่วย Ω หรือ kΩ ได้บนหน้าเว็บ),
-`β`, `VBE [V]`
+ตัวแปรเข้าร่วมทุกโหมด: `VCC [V]`, `RC [Ω]`, `β`, `VBE [V]`
+ตัวต้านทานเลือกหน่วย Ω หรือ kΩ ได้บนฟอร์ม (1 MΩ = 1000 kΩ)
 
+**Voltage Divider Bias** (เพิ่ม `R1, R2, RE`)
 ```
 VTH = VCC × R2 / (R1 + R2)
 RTH = R1·R2 / (R1 + R2)
 IB  = (VTH − VBE) / (RTH + (β + 1)·RE)
-IC  = β·IB
-IE  = (β + 1)·IB
-VE  = IE·RE
-VB  = VE + VBE
-VC  = VCC − IC·RC
-VCE = VC − VE
 ```
 
+**Fixed Bias** (เพิ่ม `RB`, Emitter ลงกราวด์โดยตรง)
+```
+IB = (VCC − VBE) / RB
+VE = 0 V
+```
+
+**Emitter Bias แบบแหล่งจ่ายเดียว** (เพิ่ม `RB, RE`)
+```
+IB = (VCC − VBE) / [RB + (β + 1)·RE]
+```
+
+สมการร่วม: `IC = β·IB`, `IE = (β+1)·IB`, `VE = IE·RE` (Fixed ใช้ 0),
+`VB = VE + VBE`, `VC = VCC − IC·RC`, `VCE = VC − VE`
+
 ค่าที่แสดง: `VB, VE, VC, VCE [V]`, `IC, IE [mA]`, `IB [µA]`
-พร้อม `VTH [V]`, `RTH [Ω]` และค่าตัวต้านทานที่แปลงเป็น Ω แล้ว
+เฉพาะโหมด Divider แสดง `VTH [V]`, `RTH [Ω]` ด้วย
+ตาราง "ค่าที่ใช้คำนวณ" แสดงเฉพาะตัวต้านทานของโหมดที่เลือกหลังแปลงเป็น Ω แล้ว
+
+> วิธีใช้: เลือกโหมดใน Dropdown แล้วกด **เปลี่ยนโหมด / โหลดฟอร์มใหม่**
+> ระบบจะแสดงเฉพาะช่องที่โหมดนั้นใช้ แล้วกรอกค่ากด **Calculate DC Bias**
 
 ## ตัวอย่างอ้างอิง
 
@@ -103,15 +119,24 @@ VCE = VC − VE
 
 ## Input Validation และ Warning
 
-- ค่าไม่ครบ / ไม่ใช่ตัวเลข → แสดงข้อความ Error ภาษาไทย ไม่ทำให้หน้าเว็บล้ม (HTTP 400)
-- `VCC ≤ 0`, `R ≤ 0`, `β ≤ 0`, `VBE` ไม่อยู่ระหว่าง 0 กับ VCC → แจ้ง Error
-- `VTH ≤ VBE` → แจ้งว่า Transistor อยู่สภาวะ **Cutoff** และแบบจำลองใช้ไม่ได้
-- `VCE ≤ VCE(sat) ≈ 0.2 V` → แจ้งว่า **Saturation** ค่าที่ได้ไม่น่าเชื่อถือ
+- ค่าไม่ครบ / ไม่ใช่ตัวเลข / ไม่ใช่จำนวนจำกัด → แสดง Error ภาษาไทย (HTTP 400)
+- `VCC ≤ 0`, ความต้านทานที่โหมดนั้นใช้ ≤ 0, `β ≤ 0`, `VBE ≤ 0` → แจ้ง Error
+- โหมดไม่รู้จัก → แจ้ง Error (ไม่เดาว่าเป็น Divider)
+- Divider: `VTH ≤ VBE` / Fixed-Emitter: `VCC ≤ VBE` → แจ้ง **Cutoff**
+- `VCE ≤ VCE(sat) ≈ 0.2 V` → แจ้ง **Saturation** ค่าที่ได้ไม่น่าเชื่อถือ
 - `VCE` ใกล้ Saturation → แจ้งเตือนเพิ่มเติม
+- เมื่อ Error เกิดขึ้น หน้าเว็บจะไม่แสดงผลของรอบก่อน
 
-## ข้อจำกัด (ขอบเขต Lab 02)
+## ตรวจผลผ่าน Browser (Lab 03)
+
+ดูตาราง **A1–A5**, ค่าอ้างอิงอิสระ และหลักฐานหน้าเว็บได้ใน
+[`docs/validation.md`](docs/validation.md)
+ผลรันจริงผ่าน OpenCode Browser: A1–A5 ผ่านทั้งหมด
+(IC 1.230 / 1.130 / 1.026 / 0.940 mA, VCE 8.052 / 9.514 / 8.705 / 8.033 V)
+
+## ข้อจำกัด (ขอบเขต Lab 03)
 
 - ใช้ Forward-Active Approximation (β, VBE คงที่) ไม่ใช่ SPICE/ngspice
-- ไม่มี AC Analysis, Bode Plot, Transient, Signal Generator
-- รองรับเฉพาะ NPN Voltage-Divider Bias เท่านั้น
-  (Bias แบบอื่นจะเพิ่มในสัปดาห์ถัดไป)
+- ไม่มี AC Analysis, Bode Plot, Transient, DC Load Line หรือตัวเก็บประจุ Bypass
+- รองรับเฉพาะ NPN 3 โหมดที่กำหนดในใบงาน
+- ไม่ต้องเขียน Playwright script; ใช้ Browser Tool ของ OpenCode ตรวจผลแทน
