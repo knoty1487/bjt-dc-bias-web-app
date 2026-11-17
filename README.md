@@ -134,6 +134,16 @@ IB = (VCC − VBE) / [RB + (β + 1)·RE]
 ผลรันจริงผ่าน OpenCode Browser: A1–A5 ผ่านทั้งหมด
 (IC 1.230 / 1.130 / 1.026 / 0.940 mA, VCE 8.052 / 9.514 / 8.705 / 8.033 V)
 
+## ส่งงาน (Deliverables)
+
+- **GitHub URL:** https://github.com/knoty1487/bjt-dc-bias-web-app
+- **Commit SHA (Lab 03):** `ae6d37fb4379dd236f072fc76b934a7aa0dc0573`
+- **รายงาน Word:** `B6814946_Lab3.docx` (บน Desktop) — สร้างจาก `build_lab3_report.py`
+- ส่วนที่ AI ช่วย: เขียนโค้ด 3 โหมด, ฟอร์ม, tests, รัน browser A1–A5, สร้างรายงาน
+  นักศึกษาตรวจ: ค่าอ้างอิงอิสระ (คำนวณมือ), ทวนผล browser อย่างน้อย 1 กรณี,
+  ตรวจชื่อฟิลด์/หน่วย/ฟังก์ชันที่เรียก และบั๊กปุ่มเปลี่ยนโหมด
+- ใช้ **OpenCode Browser** แทน Playwright MCP (โปรเจกต์ไม่ได้ตั้งค่า Playwright MCP)
+
 ## ข้อจำกัด (ขอบเขต Lab 03)
 
 - ใช้ Forward-Active Approximation (β, VBE คงที่) ไม่ใช่ SPICE/ngspice
