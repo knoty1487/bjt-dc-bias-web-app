@@ -290,6 +290,14 @@ class SpiceWebTests(unittest.TestCase):
         self.assertIn("7.75", html)
         self.assertNotIn("Analytical reference (dc_bias.py)", html)
 
+    def test_non_numeric_reference_does_not_hide_solver_dc(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "beta": "abc"}).get_data(
+                as_text=True)
+        self.assertIn('data-status="success"', html)
+        self.assertIn("7.75", html)
+        self.assertNotIn("Analytical reference (dc_bias.py)", html)
+
     def test_missing_solver_reports_error_without_plot(self):
         with mock.patch.object(spice, "find_executable", return_value=None):
             html = self.client.post("/calculate", data=SPICE_BASE).get_data(

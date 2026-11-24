@@ -201,7 +201,7 @@ def _spice_view(analysis, inputs, form):
                 re=inputs.re, beta=_number(form, "beta"),
                 vbe=_number(form, "vbe"),
             ))
-        except ValidationError:
+        except (ValidationError, ValueError):
             reference = None
         common["samples"] = 1
         plot = ""
