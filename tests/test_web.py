@@ -111,6 +111,10 @@ class WebTests(unittest.TestCase):
         css = Path("static/style.css").read_text(encoding="utf-8")
         self.assertIn("overflow-wrap: anywhere", css)
 
+    def test_focus_ring_uses_readable_blue(self):
+        css = Path("static/style.css").read_text(encoding="utf-8")
+        self.assertIn("outline: 2px solid var(--blue)", css)
+
 
 class ModeWebTests(unittest.TestCase):
     """Lab 03: the form must switch between the three bias modes."""
