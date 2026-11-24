@@ -1,143 +1,137 @@
-# transistor-simulator
+# BJT-DC-Bias-Web-App — Lab 04: BJT Amplifier Simulator v1
 
-Lab 03 — ENG29 2121 (2/2569): Flask Web Application สำหรับคำนวณ **BJT DC Bias**
-วงจร NPN Common-Emitter 3 โหมด
+ENG29 2121 (2/2569) · Flask web app ที่ต่อยอดจาก Lab 03 โดยไม่สร้างโปรเจกต์ใหม่
 
-- **Voltage Divider Bias** (ต่อยอดจาก Lab 02)
-- **Fixed Bias** — RB จาก VCC ไป Base, Emitter ต่อลงกราวด์
-- **Emitter Bias (แหล่งจ่ายเดียว)** — RB จาก VCC ไป Base, RE จาก Emitter ลงกราวด์
+- **Lab 03 (ยังใช้ได้เหมือนเดิม):** Analytical DC Bias 3 โหมด — Voltage Divider, Fixed, Emitter
+- **Lab 04 (ใหม่):** CE Voltage Divider หนึ่งวงจร จำลองจริงด้วย ngspice
+  - `.op` — DC operating point
+  - `.ac` — Bode: gain (dB) และ phase (°) อ้างอิง `Vin = node 5`, `Vout = node 6`
+  - `.tran` — waveform `Vin`/`Vout` vs time พร้อม amplitude/frequency
 
-## GitHub / Commit
+Repository: <https://github.com/ottoponrod/BJT-DC-Bias-Web-App> (branch `main`)
+Commit SHA ของงาน Lab 04: รายงานในข้อความส่งงาน (ดู `git log -1` ในเครื่องที่ push)
 
-- Repository: <https://github.com/ottoponrod/BJT-DC-Bias-Web-App>
-- Commit SHA: `50e94c456da9f943a8168579697cd1107f627d05` (commit ที่เพิ่มแผนภาพ
-  วงจรครบทั้ง 3 โหมด; งานโหมด Fixed/Emitter, เทสต์, หลักฐาน A1–A5 และเอกสาร
-  ชุดนี้อยู่ใน `24f157f079127c860e21d92818c164fdaf9b7762`)
+> ผล SPICE มาจากการรัน solver จริงทุกครั้ง ไม่มี trace/cutoff/gain ที่ hard-code
+> ผล Analytical (`dc_bias.py`) แสดงแยกต่างหากและไม่บังคับให้เท่ากันทุกหลัก
 
 ## ความต้องการของระบบ
 
-- Python 3.10 ขึ้นไป (พัฒนาและทดสอบด้วย Python 3.13)
-- Flask 3.x (`requirements.txt`)
-- Git และ GitHub Desktop (สำหรับ commit/push)
+- Python 3.10 ขึ้นไป (พัฒนา/ทดสอบด้วย Python 3.13)
+- Flask 3.x ตาม `requirements.txt`
+- **ngspice 47** (ทดสอบกับ build 11 Aug 2026) — ต้องมี executable หรือตั้ง `NGSPICE_EXE`
+- Node.js + internet เฉพาะตอนติดตั้ง Impeccable ใหม่ (ไม่จำเป็นต่อการรันแอป)
+- Browser ที่เปิด `http://127.0.0.1:5000/` ได้
 
-## การติดตั้งและรัน
+ตัวอย่าง ngspice ที่ใช้จริง:
+`C:\Users\B6814946\AppData\Local\Programs\ngspice-47\Spice64\bin\ngspice.exe`
+
+## ติดตั้ง / รัน / ทดสอบ
 
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python -m flask --app app run
+
+# ถ้า ngspice ไม่ได้อยู่ใน PATH
+$env:NGSPICE_EXE = "C:\Users\B6814946\AppData\Local\Programs\ngspice-47\Spice64\bin\ngspice.exe"
+
+python -m flask --app app run --port 5000
 ```
 
-เปิด <http://127.0.0.1:5000/> ใน Browser
+เปิด <http://127.0.0.1:5000/> · ต้องรันผ่าน Flask เสมอ (เปิด `templates/index.html` ตรง ๆ จะไม่มี backend)
 
-> ต้องรันผ่าน Flask Server เท่านั้น การ double-click เปิด `templates/index.html`
-> จะไม่ได้ผลลัพธ์ เพราะโปรแกรมคำนวณอยู่ใน Python Backend
+```powershell
+python -m unittest discover -s tests
+```
+
+ผลล่าสุด: **90 tests OK** (22 สมการ + 28 Flask เดิม + 40 SPICE/web ใหม่)
 
 ## วิธีใช้
 
-1. เลือก **โหมดไบอัส** จาก dropdown (Divider / Fixed / Emitter)
-2. กด **เปลี่ยนโหมด** เพื่อให้ฟอร์มแสดงช่องของโหมดนั้น
-   (ปุ่มนี้ใช้ `formnovalidate` จึงสลับโหมดได้แม้ยังกรอกไม่ครบ)
-3. กรอกค่าอุปกรณ์ เลือกหน่วยตัวต้านทาน (kΩ หรือ Ω) แล้วกด **Calculate DC Bias**
-4. อ่านผล VB, VE, VC, VCE [V] และ IC [mA], IB [µA], IE [mA] พร้อมสถานะการทำงาน
+1. เลือก **Analysis mode**
+   - `Analytical DC (Lab 03)` → ใช้ได้ทั้ง 3 bias mode
+   - `DC · ngspice .op`, `AC · ngspice .ac`, `Transient · ngspice .tran` → รองรับเฉพาะ CE Voltage Divider
+2. ในโหมด SPICE ตัวเลือก bias จะถูกปิดและบังคับ `divider` (แอปแจ้ง “SPICE v1 จำลองเฉพาะ CE Voltage Divider”)
+3. กรอกค่า → กด **Run Simulation** (หรือ **Calculate DC Bias** ในโหมด Lab 03)
+4. อ่านสถานะ `Success/Error`, directive, จำนวนจุด, provenance, ตารางผล และกราฟ SVG
+5. ขยาย `<details>` **Netlist / run.log / ตัวอย่างข้อมูลจาก run.raw** เพื่อตรวจที่มาของตัวเลข
 
-| โหมด | ช่องตัวต้านทานที่ใช้ |
+### ค่าตั้งต้นวงจรอ้างอิง (Input fixture — ไม่ใช่ผลลัพธ์ที่เดาไว้)
+
+| ส่วน | ค่า |
 |---|---|
-| Voltage Divider | R1, R2, RC, RE |
-| Fixed | RB, RC |
-| Emitter | RB, RE, RC |
+| VCC / R1 / R2 | 12 V / 100 kΩ / 22 kΩ |
+| RC / RE / RL | 2.2 kΩ / 1 kΩ / 10 kΩ |
+| Cin / Cout | 10 µF / 10 µF |
+| Source (transient) | 10 mV peak @ 1 kHz |
+| AC sweep | 10 Hz – 1 MHz, 20 points/decade |
+| BJT model | `Q2N3904`, 2N3904 NPN Gummel-Poon card ( pinned ใน `spice_engine.py`) |
 
-ทุกโหมดใช้ VCC, β และ VBE ร่วมกัน และแปลงหน่วยที่จุดรับข้อมูลครั้งเดียว
-(เช่น 1 MΩ กรอกเป็น `1000` kΩ หรือ `1000000` Ω)
+ไม่มี emitter bypass capacitor ใน baseline (`CE`) · ไม่มี Starter Kit ของอาจารย์ในเครื่อง จึงใช้การ์ดโมเดล 2N3904 มาตรฐานที่ระบุพารามิเตอร์ไว้ในโค้ดและเอกสาร
 
-## การทดสอบ
+## Python ↔ ngspice ทำอะไรบ้าง
 
-```powershell
-python -m unittest discover -s tests -v
+1. `app.py` แปลง/ตรวจอินพุต (ตัวเลข, บวก, ช่วงความถี่, amplitude < VCC/2) **ก่อน** สร้าง netlist
+2. `spice_engine.build_netlist()` เขียน netlist หนึ่งไฟล์ต่อ analysis (`circuit.cir`) ใน temp dir แยกต่อรอบ
+3. เรียก solver แบบ batch:
+
+```python
+subprocess.run(
+    [str(solver), "-b", "-o", str(log_path), "-r", str(raw_path), str(circuit)],
+    cwd=run_dir, timeout=20.0, shell=False, capture_output=True, text=True,
+)
 ```
 
-ผลปัจจุบัน: **50 tests OK** (22 สมการ + 28 Flask)
+4. อ่าน `run.raw` (ASCII) เป็น array: AC เป็น complex → `VDB(6)-VDB(5)`, `VP(6)-VP(5)`; transient เป็น real → `time, v(5), v(6)`; DC อ่าน operating point จาก raw (fallback `run.log`)
+5. ถ้า solver หาย/timeout/exit≠0/log ว่าง/raw ไม่มีจุด → แสดง Error และ **ไม่มีกราฟหรือผล Success ค้าง**
+
+แยกหน้าที่: `app.py` = route/validation, `spice_engine.py` = adapter/solver, `dc_bias.py` = analytical reference, `plots.py` = SVG จาก solver points, Browser = แสดงผลที่ได้รับ
+
+## Impeccable (UI critique → polish → audit)
+
+```powershell
+npx -y impeccable install -y --providers=opencode --scope=project
+```
+
+ติดตั้งแล้วในโปรเจกต์ (โฟลเดอร์ `.opencode/` ไม่ได้ commit; ติดตั้งใหม่ด้วยคำสั่งข้างบน)
+ใช้ CLI launcher `.opencode\skills\impeccable\scripts\impeccable.cmd`
+
+- Critique: dual-agent, **21/40 (Acceptable)** → บันทึก `.impeccable/critique/2026-11-24T10-48-11Z__templates-index-html.md`
+- Polish ที่ทำจริง (UI-only): ปิด bias selector ในโหมด SPICE, busy state ตอนรัน, unit label อัปเดตสด, placeholder สั้นลงสำหรับ 390 px, focus ring สีน้ำเงิน
+- Audit หลัง polish: **16/20 (Good)** → `.impeccable/audit/2026-11-24T10-53-16Z__templates-index-html.md`
+- ไม่แต่งสมการ/ข้อมูลกราฟ/โมเดล solver
+
+ผลตรวจ B1–B8, ข้อจำกัด และชื่อ tool ที่ใช้จริงอยู่ใน [`docs/validation.md`](docs/validation.md)
+
+## Browser acceptance — ความจริงเรื่อง tool
+
+- Playwright MCP **ไม่ได้เปิดเผยใน session นี้** → ใช้ **OpenCode in-app Browser (Chromium)** แทน และบันทึกชื่อ tool จริงใน `docs/validation.md`
+- ตรวจ desktop ~1280 px สำเร็จ (viewport จริง 1397×886, document 1382 px, ไม่มี overflow/console error)
+- Phone ~390 px: มีแค่ CLI detector ของ Impeccable ที่ 390×844 + CSS breakpoint; **การจำลอง viewport ใน browser จริง NOT RUN**
+- ตามคำสั่งของผู้ใช้ **ยังไม่ได้แคป screenshot Lab 04 เลย** หลักฐานจึงเป็น DOM/status/ตัวเลข/ข้อความ error และ netlist/log ไม่ใช่ภาพ
 
 ## โครงสร้างไฟล์
 
 ```
-transistor-simulator/
-├── app.py                  # Flask routes: GET / และ POST /calculate + mode dispatch
-├── dc_bias.py              # สมการ 3 โหมด + validation + region detection
-├── templates/index.html    # ฟอร์มตามโหมด + แผนภาพ SVG ครบ 3 โหมด + ตารางผลลัพธ์
-├── static/style.css        # การจัดหน้าและ responsive layout
-├── static/app.js           # live label บนแผนภาพวงจร
-├── tests/test_dc_bias.py   # unit tests ของสมการ (22 tests)
-├── tests/test_web.py       # Flask test client (28 tests)
-├── requirements.txt
-└── docs/
-    ├── validation.md       # ค่าอ้างอิง, ตาราง A1–A5, ผลทดสอบ
-    └── evidence/lab03/     # screenshot A1–A5 + ภาพแผนภาพวงจร 3 โหมด
+app.py                    Flask routes, validation, SPICE dispatch, provenance
+dc_bias.py                Analytical DC Bias 3 โหมด (Lab 03)
+spice_engine.py           netlist + subprocess + .raw parser + cutoff logic
+plots.py                  SVG plots จาก solver points เท่านั้น
+templates/index.html      ฟอร์ม, schematic, status, evidence details
+static/style.css          layout/responsive/tokens
+static/app.js             live labels, auto-reveal, busy state
+tests/test_dc_bias.py     22 tests
+tests/test_web.py         68 tests (Lab 03 + SPICE web)
+tests/test_spice_engine.py, tests/test_plots.py   adapter/plot tests
+docs/validation.md        Lab 03 A1–A5 + Lab 04 B1–B8
+docs/evidence/lab03/      screenshot Lab 03 เดิม
+.impeccable/              critique + audit snapshots (commit เป็นหลักฐาน)
 ```
 
-## ค่าอินพุตและผลลัพธ์
+## References
 
-- อินพุต: `VCC` [V], ตัวต้านทานตามโหมด (เลือกหน่วย Ω หรือ kΩ), `β`, `VBE` [V]
-- เอาต์พุต: `VB`, `VE`, `VC`, `VCE` [V], `IC` [mA], `IB` [µA], `IE` [mA]
-  และสถานะการทำงาน
-- สถานะ: `Active`, `Near-saturation` (0.3 V < VCE < 1.0 V),
-  `Saturation` (VCE ≤ 0.3 V), `Cutoff` (ไบอัสไม่พอ)
-
-## สมการที่ใช้ (Forward-Active Approximation)
-
-```
-Fixed      IB = (VCC − VBE) / RB
-Emitter    IB = (VCC − VBE) / [RB + (β+1)RE]
-Divider    IB = (VTH − VBE) / [RTH + (β+1)RE]
-           VTH = VCC·R2/(R1+R2)      RTH = R1·R2/(R1+R2)
-
-IC  = β·IB      IE = (β+1)·IB
-VE  = IE·RE (Emitter/Divider) หรือ 0 V (Fixed)
-VB  = VE+VBE    VC = VCC−IC·RC      VCE = VC−VE
-```
-
-## AI ทำอะไร / นักศึกษาตรวจอะไร
-
-**AI (OpenCode + Superpowers) ทำ:**
-
-- อ่านโค้ด Lab 02 เดิมและวางแผนต่อยอดโดยไม่สร้างโปรเจกต์ใหม่
-- เพิ่ม `calculate_fixed_bias()` และ `calculate_emitter_bias()` ใน `dc_bias.py`
-  พร้อม validation และการแบ่ง region แบบเดียวกับ Divider
-- เพิ่ม mode dispatch, การแปลงหน่วย และการตรวจเฉพาะช่องของแต่ละโหมดใน `app.py`
-- เพิ่ม dropdown โหมด, ช่องอินพุตแบบมีเงื่อนไข และปุ่มเปลี่ยนโหมดในเทมเพลต
-- วาดแผนภาพวงจร SVG ให้ครบทั้ง 3 โหมด (Divider/Fixed/Emitter) พร้อม label ค่าแบบ live
-- เขียนเทสต์ใหม่ก่อนแก้โค้ด (TDD) และรันเทสต์จนผ่านทั้งหมด 50 tests
-- เปิดเว็บด้วย OpenCode Browser ตรวจ A1–A5 และบันทึก screenshot เป็นหลักฐาน
-- อัปเดต `docs/validation.md` และ README นี้
-
-**นักศึกษาตรวจเอง:**
-
-- ตรวจสมการทั้งสามโหมดกับความรู้ Engineering Electronics
-  (IB, IC, IE, VE, VB, VC, VCE และเงื่อนไข cutoff/saturation)
-- ตรวจหน่วยว่า kΩ ถูกคูณ 1000 เป็น Ω ก่อนเข้าฟังก์ชัน
-- คำนวณมือกรณี A2 (Fixed, RB = 1 MΩ) และ A3/A4 (Emitter) เทียบกับผลบนเว็บ
-  → ตรงกันที่ทศนิยม 3 ตำแหน่ง
-- ทำนายผล A4 ก่อนรันว่า IC จะลดลงเมื่อ RE เพิ่ม และตรวจว่าผลจริงลดลงจริง
-- ตรวจว่าโหมด Fixed ไม่มีช่อง RE, โหมด Emitter มี RB+RE และปุ่มเปลี่ยนโหมด
-  ใช้งานได้แม้ฟอร์มยังกรอกไม่ครบ
-- ตรวจข้อความ error กรณี RB = 0 ว่าเป็นภาษาไทยและไม่มีผลรอบก่อนค้างอยู่
-- เปิดดูโค้ดที่ AI เปลี่ยน (`git diff`) และรันเทสต์ซ้ำด้วยคำสั่งใน README
-
-## หลักฐานผลตรวจ A1–A5
-
-ตารางผลและค่าอ้างอิงโดยละเอียดอยู่ใน [`docs/validation.md`](docs/validation.md)
-รูปหลักฐานจากเบราว์เซอร์จริงอยู่ใน [`docs/evidence/lab03/`](docs/evidence/lab03/)
-
-| # | กรณี | IC (mA) | VCE (V) |
-|---|---|---|---|
-| A1 | Divider (Lab 02 เดิม) | 1.230 | 8.052 |
-| A2 | Fixed, RB = 1 MΩ | 1.130 | 9.514 |
-| A3 | Emitter, RE = 1 kΩ | 1.026 | 8.705 |
-| A4 | Emitter, RE = 2 kΩ | 0.940 | 8.033 |
-| A5 | Fixed, RB = 0 | error: `RB ต้องมากกว่า 0 Ω` | — |
-
-## ขอบเขต (Week 3)
-
-DC Bias เท่านั้น — ไม่มี AC, Transient, Bode Plot, Signal Generator, SPICE
-หรือ Overlay Animation
+- ngspice Documentation / User Manual และ Batch Mode (`ngspice -b -o run.log -r run.raw circuit.cir`)
+- Impeccable for coding agents — critique/polish/audit (รองรับ OpenCode)
+- Superpowers — brainstorm/plan/execute/verify workflow
+- Flask Official Docs — routes/templates/error handling
+- ENG29 2121 Lab 03 และ Lab 04 handout (ค่าอ้างอิง B1–B8)
