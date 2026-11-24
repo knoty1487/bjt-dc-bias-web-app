@@ -332,6 +332,34 @@ class SpiceWebTests(unittest.TestCase):
         self.assertIn('"analysis"', script)
         self.assertIn('"change_mode"', script)
 
+    def test_spice_mode_disables_bias_selector_and_keeps_divider(self):
+        html = self.client.post("/calculate", data={
+            **SPICE_BASE, "analysis": "ac"}).get_data(as_text=True)
+        self.assertIn('<select id="mode" name="mode" disabled>', html)
+        self.assertIn('<input type="hidden" name="mode" value="divider">', html)
+        analytical = self.client.get("/").get_data(as_text=True)
+        self.assertIn('<select id="mode" name="mode">', analytical)
+
+    def test_solver_submit_shows_busy_state_before_posting(self):
+        script = (Path(__file__).resolve().parents[1] / "static" / "app.js"
+                  ).read_text(encoding="utf-8")
+        self.assertIn("aria-busy", script)
+        self.assertIn("ngspice running", script)
+        self.assertIn("setTimeout", script)
+        self.assertIn('hidden.value = "calculate"', script)
+
+    def test_unit_labels_are_live_updated_with_the_schematic(self):
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertIn('<span data-unit-label>', html)
+        script = (Path(__file__).resolve().parents[1] / "static" / "app.js"
+                  ).read_text(encoding="utf-8")
+        self.assertIn("[data-unit-label]", script)
+
+    def test_empty_placeholder_does_not_orphan_a_word_on_phone(self):
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertIn(
+            '<p class="placeholder">กด Calculate DC Bias เพื่อดูผล</p>', html)
+
     def test_analytical_path_still_returns_lab03_reference(self):
         html = self.client.post(
             "/calculate", data={**SPICE_BASE,

@@ -36,18 +36,21 @@
 
     <div class="field">
       <label for="mode">โหมดไบอัส</label>
-      <select id="mode" name="mode">
+      <select id="mode" name="mode"{% if analysis != "analytical" %} disabled{% endif %}>
         <option value="divider" {% if mode == "divider" %}selected{% endif %}>Voltage Divider Bias</option>
         <option value="fixed" {% if mode == "fixed" %}selected{% endif %}>Fixed Bias</option>
         <option value="emitter" {% if mode == "emitter" %}selected{% endif %}>Emitter Bias (แหล่งจ่ายเดียว)</option>
       </select>
+      {% if analysis != "analytical" %}
+      <input type="hidden" name="mode" value="divider">
+      {% endif %}
     </div>
 
     {% if analysis != "analytical" %}
     <fieldset class="subform">
       <legend>CE reference · Source (SPICE)</legend>
       <div class="field">
-        <label for="rl">RL [{{ unit_label }}]</label>
+        <label for="rl">RL [<span data-unit-label>{{ unit_label }}</span>]</label>
         <input id="rl" name="rl" value="{{ form.rl }}" inputmode="decimal">
       </div>
       <div class="field">
@@ -87,41 +90,41 @@
 
     {% if mode == "divider" %}
     <div class="field">
-      <label for="r1">R1 [{{ unit_label }}]</label>
+      <label for="r1">R1 [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="r1" name="r1" value="{{ form.r1 }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="r2">R2 [{{ unit_label }}]</label>
+      <label for="r2">R2 [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="r2" name="r2" value="{{ form.r2 }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="rc">RC [{{ unit_label }}]</label>
+      <label for="rc">RC [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="rc" name="rc" value="{{ form.rc }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="re">RE [{{ unit_label }}]</label>
+      <label for="re">RE [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="re" name="re" value="{{ form.re }}" inputmode="decimal">
     </div>
     {% elif mode == "fixed" %}
     <div class="field">
-      <label for="rb">RB [{{ unit_label }}]</label>
+      <label for="rb">RB [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="rb" name="rb" value="{{ form.rb }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="rc">RC [{{ unit_label }}]</label>
+      <label for="rc">RC [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="rc" name="rc" value="{{ form.rc }}" inputmode="decimal">
     </div>
     {% else %}
     <div class="field">
-      <label for="rb">RB [{{ unit_label }}]</label>
+      <label for="rb">RB [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="rb" name="rb" value="{{ form.rb }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="re">RE [{{ unit_label }}]</label>
+      <label for="re">RE [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="re" name="re" value="{{ form.re }}" inputmode="decimal">
     </div>
     <div class="field">
-      <label for="rc">RC [{{ unit_label }}]</label>
+      <label for="rc">RC [<span data-unit-label>{{ unit_label }}</span>]</label>
       <input id="rc" name="rc" value="{{ form.rc }}" inputmode="decimal">
     </div>
     {% endif %}
@@ -353,7 +356,7 @@
       </ul>
       {% endif %}
       {% else %}
-      <p class="placeholder">กรอกค่าอุปกรณ์แล้วกด Calculate DC Bias เพื่อดูผลลัพธ์</p>
+      <p class="placeholder">กด Calculate DC Bias เพื่อดูผล</p>
       {% endif %}
 
     {% else %}
