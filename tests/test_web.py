@@ -1,7 +1,10 @@
 import re
+import subprocess
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import spice_engine as spice
 from app import app
 
 VALID = {"vcc": "12", "r1": "100", "r2": "22", "rc": "2.2", "re": "1",
@@ -269,6 +272,49 @@ class SpiceWebTests(unittest.TestCase):
         self.assertIn('data-status="error"', html)
         self.assertNotIn('data-series="gain"', html)
         self.assertNotIn('data-series="vin"', html)
+
+    def test_blank_visible_spice_input_is_rejected_not_defaulted(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "r1": ""}).get_data(
+                as_text=True)
+        self.assertIn("กรุณากรอกข้อมูลให้ครบทุกช่อง", html)
+        self.assertIn('data-status="error"', html)
+        self.assertNotIn("R1 1 2 100000", html)
+        self.assertNotIn("data-series=", html)
+
+    def test_bad_analytical_reference_does_not_hide_solver_dc(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "beta": "0"}).get_data(
+                as_text=True)
+        self.assertIn('data-status="success"', html)
+        self.assertIn("7.75", html)
+        self.assertNotIn("Analytical reference (dc_bias.py)", html)
+
+    def test_missing_solver_reports_error_without_plot(self):
+        with mock.patch.object(spice, "find_executable", return_value=None):
+            html = self.client.post("/calculate", data=SPICE_BASE).get_data(
+                as_text=True)
+        self.assertIn("ไม่พบ ngspice", html)
+        self.assertIn('data-status="error"', html)
+        self.assertNotIn("data-series=", html)
+
+    def test_solver_timeout_reports_error_without_plot(self):
+        timeout = subprocess.TimeoutExpired(cmd=["ngspice"], timeout=20.0)
+        with mock.patch.object(spice.subprocess, "run", side_effect=timeout):
+            html = self.client.post("/calculate", data=SPICE_BASE).get_data(
+                as_text=True)
+        self.assertIn("timeout", html)
+        self.assertIn('data-status="error"', html)
+        self.assertNotIn("data-series=", html)
+
+    def test_empty_raw_reports_error_without_plot(self):
+        empty = spice.RawData(plotname="op", flags="", variables=[], points=[])
+        with mock.patch.object(spice, "parse_raw", return_value=empty):
+            html = self.client.post("/calculate", data=SPICE_BASE).get_data(
+                as_text=True)
+        self.assertIn("run.raw ไม่มีข้อมูล", html)
+        self.assertIn('data-status="error"', html)
+        self.assertNotIn("data-series=", html)
 
     def test_spice_ac_chart_has_frequency_gain_phase_units(self):
         html = self.client.post(

@@ -57,6 +57,11 @@ SPICE_ONLY_FIELDS = (
     "rl", "cin", "cout", "vin_mv", "freq_khz", "f_start_hz", "f_stop_hz",
 )
 
+# Fields shown in the SPICE form must never be replaced by a silent default.
+SPICE_REQUIRED_FIELDS = ("vcc", "r1", "r2", "rc", "re")
+# β/VBE only feed the optional analytical reference beside the SPICE result.
+OPTIONAL_REFERENCE_FIELDS = ("beta", "vbe")
+
 ANALYSES = ("analytical", "dc", "ac", "tran")
 ANALYSIS_LABELS = {
     "analytical": "Analytical DC (Lab 03)",
@@ -128,7 +133,11 @@ def _collect_form(fallback: bool):
 
 
 def _number(form, field):
-    raw = form.get(field) or DEFAULTS[field]
+    raw = (form.get(field) or "").strip()
+    if not raw:
+        if field in SPICE_ONLY_FIELDS or field in OPTIONAL_REFERENCE_FIELDS:
+            return float(DEFAULTS[field])
+        raise spice.SpiceInputError("กรุณากรอกข้อมูลให้ครบทุกช่อง")
     return float(raw)
 
 
@@ -185,11 +194,15 @@ def _spice_view(analysis, inputs, form):
             "ic": (inputs.vcc - nodes["V(3)"]) / inputs.rc,
             "ie": nodes["V(4)"] / inputs.re,
         })
-        reference = calculate_dc_bias(BiasInputs(
-            vcc=inputs.vcc, r1=inputs.r1, r2=inputs.r2, rc=inputs.rc,
-            re=inputs.re, beta=_number(form, "beta"),
-            vbe=_number(form, "vbe"),
-        ))
+        try:
+            # A bad analytical-only value must not discard a completed SPICE run.
+            reference = calculate_dc_bias(BiasInputs(
+                vcc=inputs.vcc, r1=inputs.r1, r2=inputs.r2, rc=inputs.rc,
+                re=inputs.re, beta=_number(form, "beta"),
+                vbe=_number(form, "vbe"),
+            ))
+        except ValidationError:
+            reference = None
         common["samples"] = 1
         plot = ""
     elif analysis == "ac":
@@ -260,6 +273,10 @@ def calculate():
                             f"{form.get('freq_khz') or DEFAULTS['freq_khz']} kHz")
         if action == "change_mode":
             return _render(form, mode, analysis=analysis,
+                           source_label=source_label)
+        if any(not form[field] for field in SPICE_REQUIRED_FIELDS):
+            return _render(form, mode, analysis=analysis,
+                           spice_error="กรุณากรอกข้อมูลให้ครบทุกช่อง",
                            source_label=source_label)
         try:
             inputs = _spice_inputs(form)

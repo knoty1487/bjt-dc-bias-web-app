@@ -204,14 +204,20 @@ OK
 คำสั่ง: `python -m unittest discover -s tests`
 
 ```
-Ran 90 tests in 1.413s
+Ran 95 tests in 1.980s
 
 OK
 ```
 
-แบ่งเป็น `test_dc_bias.py` 22 tests (Lab 03), `test_web.py` เดิม 28 tests,
-และ tests ของ SPICE/web/adapter/plot อีก 40 tests รวม Lab 04
-รันบนโค้ด commit `9863a82` และใช้ยืนยันอีกครั้งก่อน push
+แบ่งเป็น `test_dc_bias.py` 22 tests (Lab 03), `test_web.py` 50 tests,
+`test_spice_engine.py` 19 tests และ `test_plots.py` 4 tests
+รันบนโค้ดก่อน push และใช้ยืนยันอีกครั้งหลัง merge/push; Commit SHA สุดท้าย
+รายงานในข้อความส่งงาน (ไม่เขียนในไฟล์เพราะ commit ไม่สามารถใส่ SHA ของตัวเองได้)
+
+เพิ่มเติมหลัง code review: ทดสอบกรณีช่องที่มองเห็นได้ของ SPICE ถูกเคลียร์
+ (`r1=""` ต้อง Error ไม่ใช่ default เงียบ), β=0 ที่ทำให้ analytical reference
+ ล้มเหลวต้องไม่ลบผล solver, และ failure path ของ solver (ไม่พบ executable,
+ timeout, raw ว่าง) ต้องได้ `data-status="error"` และไม่มี series ค้าง
 
 ### 5.6 ความคลาดเคลื่อนและข้อจำกัด
 

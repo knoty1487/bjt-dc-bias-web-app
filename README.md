@@ -44,7 +44,7 @@ python -m flask --app app run --port 5000
 python -m unittest discover -s tests
 ```
 
-ผลล่าสุด: **90 tests OK** (22 สมการ + 28 Flask เดิม + 40 SPICE/web ใหม่)
+ผลล่าสุด: **95 tests OK** (`dc_bias` 22 · `web` 50 · `spice_engine` 19 · `plots` 4)
 
 ## วิธีใช้
 
@@ -121,7 +121,7 @@ templates/index.html      ฟอร์ม, schematic, status, evidence details
 static/style.css          layout/responsive/tokens
 static/app.js             live labels, auto-reveal, busy state
 tests/test_dc_bias.py     22 tests
-tests/test_web.py         68 tests (Lab 03 + SPICE web)
+tests/test_web.py         50 tests (Lab 03 + SPICE web)
 tests/test_spice_engine.py, tests/test_plots.py   adapter/plot tests
 docs/validation.md        Lab 03 A1–A5 + Lab 04 B1–B8
 docs/evidence/lab03/      screenshot Lab 03 เดิม
