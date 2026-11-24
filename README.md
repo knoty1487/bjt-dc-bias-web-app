@@ -96,9 +96,9 @@ npx -y impeccable install -y --providers=opencode --scope=project
 ติดตั้งแล้วในโปรเจกต์ (โฟลเดอร์ `.opencode/` ไม่ได้ commit; ติดตั้งใหม่ด้วยคำสั่งข้างบน)
 ใช้ CLI launcher `.opencode\skills\impeccable\scripts\impeccable.cmd`
 
-- Critique: dual-agent, **21/40 (Acceptable)** → บันทึก `.impeccable/critique/2026-11-24T10-48-11Z__templates-index-html.md`
+- Critique: dual-agent, **21/40 (Acceptable)** → `docs/evidence/lab04/impeccable-critique.md` (copy ของ snapshot ใน `.impeccable/`)
 - Polish ที่ทำจริง (UI-only): ปิด bias selector ในโหมด SPICE, busy state ตอนรัน, unit label อัปเดตสด, placeholder สั้นลงสำหรับ 390 px, focus ring สีน้ำเงิน
-- Audit หลัง polish: **16/20 (Good)** → `.impeccable/audit/2026-11-24T10-53-16Z__templates-index-html.md`
+- Audit หลัง polish: **16/20 (Good)** → `docs/evidence/lab04/impeccable-audit.md` (copy ของ snapshot ใน `.impeccable/`)
 - ไม่แต่งสมการ/ข้อมูลกราฟ/โมเดล solver
 
 ผลตรวจ B1–B8, ข้อจำกัด และชื่อ tool ที่ใช้จริงอยู่ใน [`docs/validation.md`](docs/validation.md)
@@ -125,7 +125,7 @@ tests/test_web.py         68 tests (Lab 03 + SPICE web)
 tests/test_spice_engine.py, tests/test_plots.py   adapter/plot tests
 docs/validation.md        Lab 03 A1–A5 + Lab 04 B1–B8
 docs/evidence/lab03/      screenshot Lab 03 เดิม
-.impeccable/              critique + audit snapshots (commit เป็นหลักฐาน)
+docs/evidence/lab04/       critique + audit snapshots ที่ commit เป็นหลักฐาน (ต้นฉบับอยู่ใน .impeccable/ ซึ่ง tool ตั้งค่าไม่ให้ commit)
 ```
 
 ## References

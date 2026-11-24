@@ -185,12 +185,12 @@ OK
   ใช้ launcher `.opencode\skills\impeccable\scripts\impeccable.cmd`
 - **Critique:** dual-agent (user pre-authorized autonomous execution จึงข้าม interview)
   คะแนน **21/40 (Acceptable)** —
-  `.impeccable/critique/2026-11-24T10-48-11Z__templates-index-html.md`
+  `docs/evidence/lab04/impeccable-critique.md` (copy ของ snapshot ใน `.impeccable/`)
 - **Polish (UI-only):** ปิด bias selector ในโหมด SPICE และส่ง hidden `mode=divider`,
   busy state ตอนกด Run, unit label อัปเดตสด, placeholder สั้นลงสำหรับ 390 px,
   focus ring เปลี่ยนเป็นสีน้ำเงินอ่านง่าย
 - **Audit หลัง polish:** **16/20 (Good)** —
-  `.impeccable/audit/2026-11-24T10-53-16Z__templates-index-html.md`
+  `docs/evidence/lab04/impeccable-audit.md` (copy ของ snapshot ใน `.impeccable/`)
 - **Detector:** source `flat-type-hierarchy` เป็น false positive เพราะ detector
   ตาม `url_for('static', filename='style.css')` ไม่ได้; rendered URL scan ที่
   `1280x800` และ `390x844` ได้ `[]` ทั้งสองขนาด
