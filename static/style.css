@@ -148,6 +148,33 @@ button:hover {
   background: var(--navy);
 }
 
+.actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.actions button {
+  margin-top: 0;
+}
+
+.actions button[value="change_mode"] {
+  color: var(--navy);
+  background: #e6f0f8;
+  border: 1px solid var(--line);
+}
+
+.actions button[value="change_mode"]:hover {
+  background: #d3e5f2;
+}
+
+.mode-note {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .alert {
   margin: 0 0 16px;
   padding: 11px 14px;

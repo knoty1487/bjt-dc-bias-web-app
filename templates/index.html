@@ -10,8 +10,8 @@
 
 <header class="site-header">
   <div class="brand">
-    <h1>Lab 02: BJT DC Bias Web App</h1>
-    <p>ENG29 2121 – Common Emitter (Voltage Divider Bias)</p>
+    <h1>Lab 03: BJT DC Bias Web App</h1>
+    <p>ENG29 2121 – Common Emitter (Divider / Fixed / Emitter Bias)</p>
   </div>
   <p class="course-badge">Computer Programming for<br>Electrical Engineers</p>
 </header>
@@ -25,9 +25,20 @@
     {% endif %}
 
     <div class="field">
+      <label for="mode">โหมดไบอัส</label>
+      <select id="mode" name="mode">
+        <option value="divider" {% if mode == "divider" %}selected{% endif %}>Voltage Divider Bias</option>
+        <option value="fixed" {% if mode == "fixed" %}selected{% endif %}>Fixed Bias</option>
+        <option value="emitter" {% if mode == "emitter" %}selected{% endif %}>Emitter Bias (แหล่งจ่ายเดียว)</option>
+      </select>
+    </div>
+
+    <div class="field">
       <label for="vcc">VCC [V]</label>
       <input id="vcc" name="vcc" value="{{ form.vcc }}" inputmode="decimal">
     </div>
+
+    {% if mode == "divider" %}
     <div class="field">
       <label for="r1">R1 [{{ unit_label }}]</label>
       <input id="r1" name="r1" value="{{ form.r1 }}" inputmode="decimal">
@@ -44,6 +55,30 @@
       <label for="re">RE [{{ unit_label }}]</label>
       <input id="re" name="re" value="{{ form.re }}" inputmode="decimal">
     </div>
+    {% elif mode == "fixed" %}
+    <div class="field">
+      <label for="rb">RB [{{ unit_label }}]</label>
+      <input id="rb" name="rb" value="{{ form.rb }}" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="rc">RC [{{ unit_label }}]</label>
+      <input id="rc" name="rc" value="{{ form.rc }}" inputmode="decimal">
+    </div>
+    {% else %}
+    <div class="field">
+      <label for="rb">RB [{{ unit_label }}]</label>
+      <input id="rb" name="rb" value="{{ form.rb }}" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="re">RE [{{ unit_label }}]</label>
+      <input id="re" name="re" value="{{ form.re }}" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label for="rc">RC [{{ unit_label }}]</label>
+      <input id="rc" name="rc" value="{{ form.rc }}" inputmode="decimal">
+    </div>
+    {% endif %}
+
     <div class="field">
       <label for="beta">β (hFE)</label>
       <input id="beta" name="beta" value="{{ form.beta }}" inputmode="decimal">
@@ -60,9 +95,13 @@
       </select>
     </div>
 
-    <button type="submit">Calculate DC Bias</button>
+    <div class="actions">
+      <button type="submit" name="action" value="calculate">Calculate DC Bias</button>
+      <button type="submit" name="action" value="change_mode" formnovalidate>เปลี่ยนโหมด</button>
+    </div>
   </form>
 
+  {% if mode == "divider" %}
   <section class="card">
     <h2>Circuit: Common-Emitter Amplifier</h2>
     <svg class="circuit" viewBox="0 0 400 360" role="img"
@@ -108,17 +147,115 @@
       <line x1="174" y1="352" x2="186" y2="352" class="wire"/>
     </svg>
   </section>
+  {% elif mode == "fixed" %}
+  <section class="card">
+    <h2>Circuit: {{ mode_label }}</h2>
+    <svg class="circuit" viewBox="0 0 400 360" role="img"
+         aria-label="วงจร Common-Emitter แบบ Fixed Bias">
+      <line x1="90" y1="40" x2="270" y2="40" class="wire"/>
+      <text x="110" y="18" class="lbl small">VCC</text>
+      <text x="110" y="32" class="lbl" id="c-vcc">{{ form.vcc }} V</text>
+
+      <line x1="90" y1="40" x2="90" y2="70" class="wire"/>
+      <rect x="80" y="70" width="20" height="60" class="res"/>
+      <line x1="90" y1="130" x2="90" y2="200" class="wire"/>
+      <text x="72" y="104" class="lbl end" id="c-rb">RB = {{ form.rb }} {{ unit_label }}</text>
+
+      <line x1="90" y1="200" x2="166" y2="200" class="wire"/>
+
+      <circle cx="190" cy="200" r="26" class="dev"/>
+      <line x1="166" y1="180" x2="166" y2="220" class="wire"/>
+      <line x1="166" y1="188" x2="216" y2="172" class="wire"/>
+      <line x1="166" y1="212" x2="216" y2="228" class="wire"/>
+      <polygon points="216,228 202,224 208,213" class="arrow"/>
+      <text x="224" y="206" class="lbl" id="c-beta">β = {{ form.beta }}</text>
+
+      <line x1="216" y1="172" x2="270" y2="172" class="wire"/>
+      <line x1="270" y1="172" x2="270" y2="130" class="wire"/>
+      <rect x="260" y="70" width="20" height="60" class="res"/>
+      <line x1="270" y1="70" x2="270" y2="40" class="wire"/>
+      <text x="288" y="104" class="lbl" id="c-rc">RC = {{ form.rc }} {{ unit_label }}</text>
+
+      <line x1="216" y1="228" x2="270" y2="228" class="wire"/>
+      <line x1="270" y1="228" x2="270" y2="330" class="wire"/>
+      <text x="288" y="290" class="lbl small">VE = 0 V</text>
+
+      <line x1="190" y1="330" x2="270" y2="330" class="wire"/>
+      <line x1="205" y1="336" x2="255" y2="336" class="wire"/>
+      <line x1="213" y1="344" x2="247" y2="344" class="wire"/>
+      <line x1="221" y1="352" x2="239" y2="352" class="wire"/>
+    </svg>
+    <ul class="mode-note">
+      <li>IB = (VCC − VBE) / RB</li>
+      <li>IC = β · IB, IE = (β + 1) · IB</li>
+      <li>VE = 0 V (อิมิตเตอร์ต่อลงกราวด์), VC = VCC − IC · RC</li>
+    </ul>
+  </section>
+  {% else %}
+  <section class="card">
+    <h2>Circuit: {{ mode_label }}</h2>
+    <svg class="circuit" viewBox="0 0 400 360" role="img"
+         aria-label="วงจร Common-Emitter แบบ Emitter Bias (แหล่งจ่ายเดียว)">
+      <line x1="90" y1="40" x2="270" y2="40" class="wire"/>
+      <text x="110" y="18" class="lbl small">VCC</text>
+      <text x="110" y="32" class="lbl" id="c-vcc">{{ form.vcc }} V</text>
+
+      <line x1="90" y1="40" x2="90" y2="70" class="wire"/>
+      <rect x="80" y="70" width="20" height="60" class="res"/>
+      <line x1="90" y1="130" x2="90" y2="200" class="wire"/>
+      <text x="72" y="104" class="lbl end" id="c-rb">RB = {{ form.rb }} {{ unit_label }}</text>
+
+      <line x1="90" y1="200" x2="166" y2="200" class="wire"/>
+
+      <circle cx="190" cy="200" r="26" class="dev"/>
+      <line x1="166" y1="180" x2="166" y2="220" class="wire"/>
+      <line x1="166" y1="188" x2="216" y2="172" class="wire"/>
+      <line x1="166" y1="212" x2="216" y2="228" class="wire"/>
+      <polygon points="216,228 202,224 208,213" class="arrow"/>
+      <text x="224" y="206" class="lbl" id="c-beta">β = {{ form.beta }}</text>
+
+      <line x1="216" y1="172" x2="270" y2="172" class="wire"/>
+      <line x1="270" y1="172" x2="270" y2="130" class="wire"/>
+      <rect x="260" y="70" width="20" height="60" class="res"/>
+      <line x1="270" y1="70" x2="270" y2="40" class="wire"/>
+      <text x="288" y="104" class="lbl" id="c-rc">RC = {{ form.rc }} {{ unit_label }}</text>
+
+      <line x1="216" y1="228" x2="270" y2="228" class="wire"/>
+      <line x1="270" y1="228" x2="270" y2="255" class="wire"/>
+      <rect x="260" y="255" width="20" height="60" class="res"/>
+      <line x1="270" y1="315" x2="270" y2="330" class="wire"/>
+      <text x="288" y="289" class="lbl" id="c-re">RE = {{ form.re }} {{ unit_label }}</text>
+
+      <line x1="190" y1="330" x2="270" y2="330" class="wire"/>
+      <line x1="205" y1="336" x2="255" y2="336" class="wire"/>
+      <line x1="213" y1="344" x2="247" y2="344" class="wire"/>
+      <line x1="221" y1="352" x2="239" y2="352" class="wire"/>
+    </svg>
+    <ul class="mode-note">
+      <li>IB = (VCC − VBE) / [RB + (β + 1) · RE]</li>
+      <li>IC = β · IB, IE = (β + 1) · IB</li>
+      <li>VE = IE · RE, VC = VCC − IC · RC</li>
+    </ul>
+  </section>
+  {% endif %}
 
   <section class="card">
-    <h2>ผลลัพธ์ DC Bias</h2>
+    <h2>ผลลัพธ์ DC Bias — {{ mode_label }}</h2>
 
     {% if result %}
-    {% set reason = {
-      "active": "VCE = %.3f V > 1.0 V (transistor in active region)"|format(result.vce),
-      "near-saturation": "0.3 V < VCE = %.3f V < 1.0 V"|format(result.vce),
-      "saturation": "VCE = %.3f V ≤ 0.3 V"|format(result.vce),
-      "cutoff": "VTH = %.3f V ≤ VBE = %.2f V"|format(result.vth, form.vbe|float),
-    } %}
+    {% if result.region == "cutoff" %}
+      {% if result.vth is not none %}
+        {% set reason = "VTH = %.3f V ≤ VBE = %.2f V"|format(result.vth, form.vbe|float) %}
+      {% else %}
+        {% set reason = "VCC = %.3f V ≤ VBE = %.2f V"|format(form.vcc|float, form.vbe|float) %}
+      {% endif %}
+    {% elif result.region == "saturation" %}
+      {% set reason = "VCE = %.3f V ≤ 0.3 V"|format(result.vce) %}
+    {% elif result.region == "near-saturation" %}
+      {% set reason = "0.3 V < VCE = %.3f V < 1.0 V"|format(result.vce) %}
+    {% else %}
+      {% set reason = "VCE = %.3f V > 1.0 V (transistor in active region)"|format(result.vce) %}
+    {% endif %}
     {% set title = {
       "active": "Active region approximation OK",
       "near-saturation": "Near-saturation — ตรวจสอบซ้ำ",
@@ -127,7 +264,7 @@
     } %}
     <div class="region-banner" data-region="{{ result.region }}">
       <strong>{{ title[result.region] }}</strong>
-      <span>{{ reason[result.region] }}</span>
+      <span>{{ reason }}</span>
     </div>
 
     <table>
@@ -139,6 +276,10 @@
         <tr><th scope="row">IC</th><td>{{ "%.3f"|format(result.ic * 1000) }} mA</td></tr>
         <tr><th scope="row">IB</th><td>{{ "%.3f"|format(result.ib * 1e6) }} µA</td></tr>
         <tr><th scope="row">IE</th><td>{{ "%.3f"|format(result.ie * 1000) }} mA</td></tr>
+        {% if result.vth is not none %}
+        <tr><th scope="row">VTH</th><td>{{ "%.3f"|format(result.vth) }} V</td></tr>
+        <tr><th scope="row">RTH</th><td>{{ "%.3f"|format(result.rth / 1000) }} kΩ</td></tr>
+        {% endif %}
       </tbody>
     </table>
 
@@ -156,10 +297,9 @@
 </main>
 
 <footer class="goal-strip">
-  <h2>Week 2 Goal</h2>
-  <p>สร้าง Flask Web App ที่รับค่าอุปกรณ์ คำนวณ DC Bias
-     (VB, VE, VC, VCE, IB, IC, IE) ของวงจร Common-Emitter
-     แบบ Voltage-Divider Bias แล้วแสดงผลพร้อมหน่วย</p>
+  <h2>Week 3 Goal</h2>
+  <p>เพิ่มโหมดไบอัสให้เว็บแอปเดิม: Voltage Divider, Fixed Bias และ Emitter Bias
+     พร้อมแปลงหน่วย ตรวจสอบอินพุต และตรวจผลด้วยเบราว์เซอร์จริง (A1–A5)</p>
 </footer>
 <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
