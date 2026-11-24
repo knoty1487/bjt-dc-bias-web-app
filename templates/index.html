@@ -293,12 +293,12 @@
   </section>
   {% endif %}
 
-  <section class="card results" aria-live="polite">
+  <section class="card results{{ " results-wide" if analysis != "analytical" else "" }}" aria-live="polite">
     <div class="engine-bar" data-status="{{ status }}" data-analysis="{{ analysis }}">
       <strong class="status-pill">{{ "Success" if status == "success" else ("Error" if status == "error" else "Ready") }}</strong>
       <span>{{ analysis_label }}</span>
       {% if spice %}
-      <span>{{ spice.directive }} · {{ spice.samples }} solver points</span>
+      <span>{{ spice.directive }} · {{ spice.samples }} {{ "operating point" if spice.analysis == "dc" else "solver points" }}</span>
       {% endif %}
     </div>
     <h2>Engineering Results</h2>

@@ -39,6 +39,24 @@
     });
   }
 
+  // Analysis mode is server-rendered: show the matching fields and button
+  // before the user commits to a solver run.
+  var analysis = document.getElementById("analysis");
+  if (analysis && analysis.form) {
+    analysis.addEventListener("change", function () {
+      var form = analysis.form;
+      var hidden = form.querySelector('input[type="hidden"][name="action"]');
+      if (!hidden) {
+        hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = "action";
+        form.appendChild(hidden);
+      }
+      hidden.value = "change_mode";
+      form.submit();
+    });
+  }
+
   document.addEventListener("input", refresh);
   document.addEventListener("change", refresh);
   refresh();

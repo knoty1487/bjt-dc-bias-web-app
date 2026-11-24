@@ -29,3 +29,6 @@ instance/
 
 # Agent workspace (superpowers plan scratch)
 .superpowers/
+
+# Locally installed Impeccable skill (reinstall with npx, see README)
+.opencode/

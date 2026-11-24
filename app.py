@@ -51,6 +51,12 @@ NUMERIC_FIELDS = (
 )
 RESISTOR_FIELDS = ("r1", "r2", "rb", "rc", "re")
 
+# These inputs are absent from the Lab 03 form. Use their documented defaults
+# instead of showing an empty box that silently hides the value ngspice used.
+SPICE_ONLY_FIELDS = (
+    "rl", "cin", "cout", "vin_mv", "freq_khz", "f_start_hz", "f_stop_hz",
+)
+
 ANALYSES = ("analytical", "dc", "ac", "tran")
 ANALYSIS_LABELS = {
     "analytical": "Analytical DC (Lab 03)",
@@ -113,7 +119,7 @@ def _collect_form(fallback: bool):
     def read(field):
         if field in source:
             return source.get(field, "").strip()
-        return DEFAULTS[field] if fallback else ""
+        return DEFAULTS[field] if fallback or field in SPICE_ONLY_FIELDS else ""
 
     form = {field: read(field) for field in NUMERIC_FIELDS}
     unit = source.get("unit", DEFAULTS["unit"])
@@ -184,6 +190,7 @@ def _spice_view(analysis, inputs, form):
             re=inputs.re, beta=_number(form, "beta"),
             vbe=_number(form, "vbe"),
         ))
+        common["samples"] = 1
         plot = ""
     elif analysis == "ac":
         cutoff = spice.cutoff_frequency(result.ac_points)

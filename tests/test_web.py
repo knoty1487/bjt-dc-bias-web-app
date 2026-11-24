@@ -1,5 +1,6 @@
 import re
 import unittest
+from pathlib import Path
 
 from app import app
 
@@ -293,6 +294,43 @@ class SpiceWebTests(unittest.TestCase):
                                 "vin_mv": "20"}).get_data(as_text=True)
         self.assertIn("20 mV", loud)
         self.assertNotEqual(quiet, loud)
+
+    def test_analysis_change_mode_reveals_spice_fields_without_running(self):
+        html = self.client.post("/calculate", data={
+            **SPICE_BASE, "analysis": "ac", "action": "change_mode",
+        }).get_data(as_text=True)
+        self.assertIn('id="rl"', html)
+        self.assertIn('id="vin_mv"', html)
+        self.assertIn('data-status="ready"', html)
+        self.assertNotIn('data-series="gain"', html)
+
+    def test_spice_fields_show_defaults_when_absent_from_first_submit(self):
+        data = {k: v for k, v in SPICE_BASE.items()
+                if k not in ("rl", "cin", "cout", "f_start_hz", "f_stop_hz")}
+        html = self.client.post("/calculate", data={
+            **data, "analysis": "tran"}).get_data(as_text=True)
+        self.assertIn('id="rl" name="rl" value="10"', html)
+        self.assertIn('id="cin" name="cin" value="10"', html)
+        self.assertIn('id="cout" name="cout" value="10"', html)
+
+    def test_spice_results_span_two_columns_for_the_plot(self):
+        html = self.client.post("/calculate", data={
+            **SPICE_BASE, "analysis": "ac"}).get_data(as_text=True)
+        self.assertIn('class="card results results-wide"', html)
+        plain = self.client.get("/").get_data(as_text=True)
+        self.assertIn('class="card results"', plain)
+
+    def test_dc_status_names_the_operating_point_not_solver_points(self):
+        html = self.client.post("/calculate", data=SPICE_BASE).get_data(
+            as_text=True)
+        self.assertIn("1 operating point", html)
+        self.assertNotIn("0 solver points", html)
+
+    def test_analysis_dropdown_auto_reveals_its_fields(self):
+        script = (Path(__file__).resolve().parents[1] / "static" / "app.js"
+                  ).read_text(encoding="utf-8")
+        self.assertIn('"analysis"', script)
+        self.assertIn('"change_mode"', script)
 
     def test_analytical_path_still_returns_lab03_reference(self):
         html = self.client.post(

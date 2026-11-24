@@ -383,6 +383,11 @@ tbody tr:last-child td {
   font-size: 0.98rem;
 }
 
+/* Simulation charts need the circuit column's width as well. */
+.results-wide {
+  grid-column: 2 / -1;
+}
+
 .plot-wrap {
   width: 100%;
   margin: 10px 0;
