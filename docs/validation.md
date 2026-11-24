@@ -149,21 +149,28 @@ OK
   ผ่าน navigate/snapshot/select/fill/click/evaluate/console เพราะ
   **Playwright MCP ไม่ได้เปิดเผยใน session นี้** จึงไม่มีการอ้างว่าเป็นผล
   Playwright MCP
-- **หลักฐานภาพ:** ตามคำสั่งของผู้ใช้ **ยังไม่ได้แคป screenshot Lab 04**
-  หลักฐานที่บันทึกจึงเป็น DOM/status/ตัวเลข/ข้อความ error/netlist/log ไม่ใช่ภาพ
+- **หลักฐานภาพ:** ผู้ใช้อนุญาตให้แคปในภายหลัง → มี screenshot จริงจาก browser
+  จำนวน 12 ภาพใน `docs/evidence/lab04/` ได้แก่ `B1-regression-divider.jpg`,
+  `B1-regression-fixed.jpg`, `B1-regression-emitter.jpg`, `B2-dc-spice.jpg`,
+  `B3-change-re-before.jpg`, `B3-change-re-after.jpg`, `B4-ac-bode.jpg`,
+  `B5-transient.jpg`, `B6-change-source-before.jpg`,
+  `B6-change-source-after.jpg`, `B7-invalid-re-error.jpg`, `B8-desktop-ui.jpg`
+  ทุกภาพเป็น full-page JPEG จาก OpenCode in-app Browser (Chromium) และค่าที่รายงาน
+  อ่านเพิ่มจาก DOM/status/netlist/log ไม่ได้เชื่อภาพเพียงอย่างเดียว
+  **ไม่มี mobile screenshot** — ดูเหตุผลในข้อ 5.6
 
 ### 5.2 ตารางผล B1–B8
 
 | Case | Method / Tool | Input | Expected / Reference | Observed | Evidence | Status |
 |---|---|---|---|---|---|---|
-| **B1 · Regression** | OpenCode in-app Browser, POST `/calculate` จริง | Analytical: Divider 12 V/100 kΩ/22 kΩ/1 kΩ; Fixed RB=1000 kΩ; Emitter RB=1000 kΩ, RE=1 kΩ | ค่า Lab 03 เดิม: Divider `VCE 8.052 V, IC 1.230 mA`; Fixed `9.514 V, 1.130 mA`; Emitter `8.705 V, 1.026 mA` | Divider **8.052 V / 1.230 mA**; Fixed **9.514 V / 1.130 mA**; Emitter **8.705 V / 1.026 mA**; สลับโหมดได้ | DOM result table + ข้อ 1 ของเอกสารนี้; no screenshot (deferred) | **PASS** |
-| **B2 · DC SPICE** | Browser → Flask → ngspice `.op` | CE reference defaults, Analysis mode = `DC · ngspice .op` | แสดง VB/VE/VC/VCE/IC/IE จาก solver พร้อม engine/model/status | **VB 2.004 V, VE 1.333 V, VC 9.087 V, VCE 7.754 V, IC 1.324 mA, IE 1.333 mA**; status **Success**; model **2N3904**; engine **ngspice 47 (batch)** | engine bar + result rows + `<details>` netlist/run.log/raw op block | **PASS** |
-| **B3 · Change RE** | Browser, แก้ RE เพียงค่าเดียวแล้วรัน `.op` ซ้ำ | เหมือน B2 แต่ RE = 1 kΩ → **1.5 kΩ** | operating point ต้องเปลี่ยน ไม่ใช่ค่าค้าง | **VCE 7.754 → 8.591 V**; **IC 1.324 → 0.919 mA** | ผลก่อน/หลังจากสอง POST + netlist ของแต่ละรัน | **PASS** |
-| **B4 · AC** | Browser, ngspice `.ac` + SVG | CE reference, sweep 10 Hz–1 MHz, Vin=node 5 / Vout=node 6 | แกน `Frequency (Hz)`, `Gain (dB)`, `Phase (°)`; มีอ้างอิง −3 dB หรือข้อความ “not determined in sweep range” | **101 solver points**; peak gain **4.89 dB**; cutoff **not determined in sweep range**; sample 10 Hz → **4.77 dB, −167.0°**; series `gain:101`, `phase:101` | SVG axes/ticks + note “Vin = node 5, Vout = node 6” + raw array | **PASS** |
-| **B5 · Transient** | Browser, ngspice `.tran` | source **10 mV peak @ 1 kHz** | time/Vin/Vout พร้อมหน่วย และ Vin–Vout กลับเฟส | **3008 solver points**; Vin peak **10.00 mV**; Vout peak **17.60 mV**; sample มีค่า Vin/Vout ตรงข้ามเครื่องหมาย | DOM numeric summary + plot data table จาก raw | **PASS** |
-| **B6 · Change Source** | Browser, แก้ amplitude แล้วรัน `.tran` ซ้ำ | amplitude **10 mV → 20 mV** (frequency เดิม 1 kHz) | waveform/peak ต้องเปลี่ยนตาม input ไม่ใช่กราฟ hard-code | Vin peak **10.00 → 20.00 mV**; Vout peak **17.60 → 35.19 mV** | ผลก่อน/หลัง + series จำนวนเดิม 3008 จุด แต่ค่าต่างกัน | **PASS** |
-| **B7 · Invalid / Fail** | Browser, กรอก RE=0 แล้ว submit | `RE = 0 Ω` | error ชัดเจน ไม่มีผล Success หรือกราฟเก่าค้าง | ข้อความ **`re ต้องมากกว่า 0`**; `data-status="error"`; **0 plot / 0 series / 0 result row** | DOM error banner + absence checks | **PASS** |
-| **B8 · UI** | OpenCode in-app Browser + Impeccable detector | desktop viewport จริง **1397×886**; หลัง polish ตรวจ SPICE mode, หน่วย, busy state และรัน AC ซ้ำ; mobile ~390 px | หน่วย/ปุ่ม/กราฟอ่านได้ ไม่มี overflow หรือ console error; mobile ต้องตรวจจริงจึงจะผ่าน | `scrollWidth === clientWidth === 1382`, overflow elements **0**, console errors **0**; plot width **848 px**; bias selector disabled + hidden `mode=divider`; unit label อัปเดตเป็น `Ω`; busy state `aria-busy=true`, ปุ่ม disabled, ข้อความ `ngspice running…`; AC rerun **Success / 101 points**. Mobile: detector `390×844` ได้ `[]` และมี breakpoint 1099/760 px แต่ **ยังไม่ได้จำลอง viewport ใน browser จริง** | browser `evaluate`/`console` + Impeccable detect JSON | **PASS (desktop)** / **NOT RUN (mobile ~390 px)** |
+| **B1 · Regression** | OpenCode in-app Browser, POST `/calculate` จริง | Analytical: Divider 12 V/100 kΩ/22 kΩ/1 kΩ; Fixed RB=1000 kΩ; Emitter RB=1000 kΩ, RE=1 kΩ | ค่า Lab 03 เดิม: Divider `VCE 8.052 V, IC 1.230 mA`; Fixed `9.514 V, 1.130 mA`; Emitter `8.705 V, 1.026 mA` | Divider **8.052 V / 1.230 mA**; Fixed **9.514 V / 1.130 mA**; Emitter **8.705 V / 1.026 mA**; สลับโหมดได้ | DOM result table + ข้อ 1 ของเอกสารนี้; screenshots `B1-regression-divider/fixed/emitter.jpg` | **PASS** |
+| **B2 · DC SPICE** | Browser → Flask → ngspice `.op` | CE reference defaults, Analysis mode = `DC · ngspice .op` | แสดง VB/VE/VC/VCE/IC/IE จาก solver พร้อม engine/model/status | **VB 2.004 V, VE 1.333 V, VC 9.087 V, VCE 7.754 V, IC 1.324 mA, IE 1.333 mA**; status **Success**; model **2N3904**; engine **ngspice 47 (batch)** | engine bar + result rows + `<details>` netlist/run.log/raw op block + `B2-dc-spice.jpg` | **PASS** |
+| **B3 · Change RE** | Browser, แก้ RE เพียงค่าเดียวแล้วรัน `.op` ซ้ำ | เหมือน B2 แต่ RE = 1 kΩ → **1.5 kΩ** | operating point ต้องเปลี่ยน ไม่ใช่ค่าค้าง | **VCE 7.754 → 8.591 V**; **IC 1.324 → 0.919 mA** | ผลก่อน/หลังจากสอง POST + netlist ของแต่ละรัน + `B3-change-re-before/after.jpg` | **PASS** |
+| **B4 · AC** | Browser, ngspice `.ac` + SVG | CE reference, sweep 10 Hz–1 MHz, Vin=node 5 / Vout=node 6 | แกน `Frequency (Hz)`, `Gain (dB)`, `Phase (°)`; มีอ้างอิง −3 dB หรือข้อความ “not determined in sweep range” | **101 solver points**; peak gain **4.89 dB**; cutoff **not determined in sweep range**; sample 10 Hz → **4.77 dB, −167.0°**; series `gain:101`, `phase:101` | SVG axes/ticks + note “Vin = node 5, Vout = node 6” + raw array + `B4-ac-bode.jpg` | **PASS** |
+| **B5 · Transient** | Browser, ngspice `.tran` | source **10 mV peak @ 1 kHz** | time/Vin/Vout พร้อมหน่วย และ Vin–Vout กลับเฟส | **3008 solver points**; Vin peak **10.00 mV**; Vout peak **17.60 mV**; sample มีค่า Vin/Vout ตรงข้ามเครื่องหมาย | DOM numeric summary + plot data table จาก raw + `B5-transient.jpg` | **PASS** |
+| **B6 · Change Source** | Browser, แก้ amplitude แล้วรัน `.tran` ซ้ำ | amplitude **10 mV → 20 mV** (frequency เดิม 1 kHz) | waveform/peak ต้องเปลี่ยนตาม input ไม่ใช่กราฟ hard-code | Vin peak **10.00 → 20.00 mV**; Vout peak **17.60 → 35.19 mV** | ผลก่อน/หลัง + series จำนวนเดิม 3008 จุด แต่ค่าต่างกัน + `B6-change-source-before/after.jpg` | **PASS** |
+| **B7 · Invalid / Fail** | Browser, กรอก RE=0 แล้ว submit | `RE = 0 Ω` | error ชัดเจน ไม่มีผล Success หรือกราฟเก่าค้าง | ข้อความ **`re ต้องมากกว่า 0`**; `data-status="error"`; **0 plot / 0 series / 0 result row** | DOM error banner + absence checks + `B7-invalid-re-error.jpg` | **PASS** |
+| **B8 · UI** | OpenCode in-app Browser + Impeccable detector | desktop viewport จริง **1397×886**; หลัง polish ตรวจ SPICE mode, หน่วย, busy state และรัน AC ซ้ำ; mobile ~390 px | หน่วย/ปุ่ม/กราฟอ่านได้ ไม่มี overflow หรือ console error; mobile ต้องตรวจจริงจึงจะผ่าน | `scrollWidth === clientWidth === 1382`, overflow elements **0**, console errors **0**; plot width **848 px**; bias selector disabled + hidden `mode=divider`; unit label อัปเดตเป็น `Ω`; busy state `aria-busy=true`, ปุ่ม disabled, ข้อความ `ngspice running…`; AC rerun **Success / 101 points**. Mobile: detector `390×844` ได้ `[]` และมี breakpoint 1099/760 px แต่ **ยังไม่ได้จำลอง viewport ใน browser จริง** | browser `evaluate`/`console` + Impeccable detect JSON + `B8-desktop-ui.jpg` (AC rerun, viewport 1496×886, `scrollWidth === clientWidth === 1481`); mobile: `window.resizeTo(390,844)` เปลี่ยน `outerWidth/Height` แต่ `innerWidth` ยัง 1496, iframe 390 px ถูก screenshot tool ปฏิเสธ (แท็บ `about:blank`) | **PASS (desktop)** / **NOT RUN (mobile ~390 px)** |
 
 ### 5.3 ทำไม B4/B5/B6 จึงพิสูจน์ว่ากราฟไม่ใช่ Mock Data
 
@@ -229,10 +236,13 @@ OK
 - **B5–B6:** ตรวจ peak และทิศทางสัญญาณจาก raw data; ไม่ได้ใช้คาดหวังเป็นค่าคงที่
 - **B8:** เฉพาะ desktop ที่รันจริงใน browser; mobile ~390 px เป็น **NOT RUN**
   เพราะ tool ใน session ไม่มี viewport emulation — มีแค่ CLI detector และ CSS breakpoint
+  (ลอง `window.resizeTo(390,844)` แล้ว `innerWidth` ยัง 1496; ลอง iframe กว้าง 390 px
+  แต่ screenshot tool ปฏิเสธแท็บ `about:blank` → ไม่แคปภาพปลอมเป็น mobile)
 - SPICE v1 รองรับเฉพาะ CE Voltage Divider อ้างอิง; ไม่มี bypass capacitor,
   ไม่มี AC/transient ของ Fixed/Emitter, ไม่มี circuit editor
-- ตามคำสั่งผู้ใช้ยังไม่แคป screenshot Lab 04; หลักฐานก่อน/หลัง UI จึงเป็น
-  critique/audit snapshot + DOM value ไม่ใช่ภาพ
+- หลักฐานก่อน/หลัง UI เป็น critique/audit snapshot + DOM value และ screenshot จริง
+  12 ภาพใน `docs/evidence/lab04/` (แคปหลังผู้ใช้อนุญาตในภายหลัง) — ไม่มี mobile screenshot
+  และไม่ได้ใช้ภาพแทนการตรวจค่าจาก solver/DOM
 
 ### 5.7 ใครทำอะไร (AI สร้าง/แก้ — นักศึกษาตรวจ)
 
@@ -243,7 +253,7 @@ OK
 - นักศึกษาตรวจ B1 เทียบ Lab 03, ตรวจ B3/B6 ว่าผลเปลี่ยนเมื่อเปลี่ยน RE/amplitude,
   และตรวจ B7 ว่า error ไม่ทิ้งกราฟ Success ค้าง
 - นักศึกษาอนุมัติให้ใช้การ์ด 2N3904 มาตรฐาน (ไม่มี Starter Kit ของผู้สอน),
-  อนุมัติให้ polish เฉพาะ UI และสั่งเลื่อน screenshot Lab 04 ตามลำดับ
+  อนุมัติให้ polish เฉพาะ UI และอนุญาตให้แคป screenshot Lab 04 ในภายหลัง
 
 ### 5.8 คำตอบสั้นสำหรับตรวจรายบุคคล
 

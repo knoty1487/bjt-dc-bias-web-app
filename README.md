@@ -108,7 +108,8 @@ npx -y impeccable install -y --providers=opencode --scope=project
 - Playwright MCP **ไม่ได้เปิดเผยใน session นี้** → ใช้ **OpenCode in-app Browser (Chromium)** แทน และบันทึกชื่อ tool จริงใน `docs/validation.md`
 - ตรวจ desktop ~1280 px สำเร็จ (viewport จริง 1397×886, document 1382 px, ไม่มี overflow/console error)
 - Phone ~390 px: มีแค่ CLI detector ของ Impeccable ที่ 390×844 + CSS breakpoint; **การจำลอง viewport ใน browser จริง NOT RUN**
-- ตามคำสั่งของผู้ใช้ **ยังไม่ได้แคป screenshot Lab 04 เลย** หลักฐานจึงเป็น DOM/status/ตัวเลข/ข้อความ error และ netlist/log ไม่ใช่ภาพ
+- ตามคำสั่งผู้ใช้ที่อนุญาตในภายหลัง แคป screenshot จริงจาก browser แล้ว 12 ภาพใน `docs/evidence/lab04/` (B1–B7, B8 desktop; B3/B6 มีก่อน/หลัง) — ค่าที่เห็นตรวจเพิ่มจาก DOM/status ไม่ได้เชื่อ screenshot เพียงอย่างเดียว
+- Phone ~390 px ยังเป็น **NOT RUN** และ **ไม่มี mobile screenshot**: `window.resizeTo(390,844)` เปลี่ยนแค่ `outerWidth/Height` แต่ `innerWidth` ยัง 1496; ลอง iframe 390 px แล้ว screenshot tool ปฏิเสธแท็บ `about:blank` จึงไม่ปลอมภาพเป็น mobile
 
 ## โครงสร้างไฟล์
 
@@ -125,7 +126,7 @@ tests/test_web.py         51 tests (Lab 03 + SPICE web)
 tests/test_spice_engine.py, tests/test_plots.py   adapter/plot tests
 docs/validation.md        Lab 03 A1–A5 + Lab 04 B1–B8
 docs/evidence/lab03/      screenshot Lab 03 เดิม
-docs/evidence/lab04/       critique + audit snapshots ที่ commit เป็นหลักฐาน (ต้นฉบับอยู่ใน .impeccable/ ซึ่ง tool ตั้งค่าไม่ให้ commit)
+docs/evidence/lab04/       screenshot B1–B8 (desktop) + critique/audit snapshots (ต้นฉบับอยู่ใน .impeccable/ ซึ่ง tool ตั้งค่าไม่ให้ commit)
 ```
 
 ## References
