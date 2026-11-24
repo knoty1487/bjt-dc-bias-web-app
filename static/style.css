@@ -307,6 +307,146 @@ tbody tr:last-child td {
   font-size: 0.95rem;
 }
 
+.subform {
+  margin: 0 0 14px;
+  padding: 12px 12px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7fbff;
+}
+
+.subform legend {
+  padding: 0 6px;
+  color: var(--teal);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.hint,
+.sub {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.hint {
+  margin: 6px 0 12px;
+}
+
+.engine-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: -4px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f7fbff;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.status-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+.engine-bar[data-status="success"] .status-pill {
+  background: var(--teal);
+}
+
+.engine-bar[data-status="error"] {
+  border-color: #e8b39d;
+  background: #fdeee6;
+}
+
+.engine-bar[data-status="error"] .status-pill {
+  background: var(--orange);
+}
+
+.provenance {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border-left: 4px solid var(--teal);
+  border-radius: 0 6px 6px 0;
+  background: #e9f6f3;
+  font-size: 0.88rem;
+}
+
+.results h3 {
+  margin: 18px 0 8px;
+  color: var(--navy);
+  font-size: 0.98rem;
+}
+
+.plot-wrap {
+  width: 100%;
+  margin: 10px 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.plot {
+  display: block;
+  width: 100%;
+  min-width: 520px;
+  height: auto;
+}
+
+.plot .grid {
+  stroke: #e4edf5;
+  stroke-width: 1;
+}
+
+.plot .axis {
+  stroke: var(--navy);
+  stroke-width: 1.4;
+}
+
+.plot .tick,
+.plot .axis-label,
+.plot .legend,
+.plot .plot-title,
+.plot .plot-note {
+  fill: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.plot .axis-label,
+.plot .plot-title {
+  fill: var(--navy);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.evidence {
+  margin: 10px 0;
+  font-size: 0.85rem;
+}
+
+.evidence summary {
+  cursor: pointer;
+  color: var(--blue);
+}
+
+.evidence pre {
+  max-height: 220px;
+  overflow: auto;
+  padding: 10px;
+  background: #f2f6fa;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 1099px) {
   .layout {
     grid-template-columns: minmax(300px, 360px) minmax(360px, 1fr);

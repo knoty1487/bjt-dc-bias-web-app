@@ -226,5 +226,82 @@ class ModeWebTests(unittest.TestCase):
         self.assertIn("9.514", html)
 
 
+SPICE_BASE = {
+    "analysis": "dc", "action": "calculate", "mode": "divider",
+    "vcc": "12", "r1": "100", "r2": "22", "rc": "2.2", "re": "1",
+    "unit": "kilo", "rl": "10", "cin": "10", "cout": "10",
+    "vin_mv": "10", "freq_khz": "1", "f_start_hz": "10",
+    "f_stop_hz": "1000000", "beta": "100", "vbe": "0.7",
+}
+
+
+class SpiceWebTests(unittest.TestCase):
+    """Lab 04: real ngspice dispatch and no stale plots on failure."""
+
+    def setUp(self):
+        self.client = app.test_client()
+
+    def test_index_offers_analysis_modes_and_engine_label(self):
+        html = self.client.get("/").get_data(as_text=True)
+        self.assertIn('name="analysis"', html)
+        for mode in ('value="dc"', 'value="ac"', 'value="tran"'):
+            self.assertIn(mode, html)
+        self.assertIn("ngspice", html)
+
+    def test_spice_dc_shows_solver_values_model_and_provenance(self):
+        html = self.client.post("/calculate", data=SPICE_BASE).get_data(
+            as_text=True)
+        self.assertIn("7.75", html)
+        self.assertIn("2N3904", html)
+        self.assertIn('data-status="success"', html)
+        self.assertIn("Analytical reference", html)
+
+    def test_invalid_re_shows_error_and_no_success_plot(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "re": "0"}).get_data(
+                as_text=True)
+        self.assertIn("ต้องมากกว่า 0", html)
+        self.assertIn('data-status="error"', html)
+        self.assertNotIn('data-series="gain"', html)
+        self.assertNotIn('data-series="vin"', html)
+
+    def test_spice_ac_chart_has_frequency_gain_phase_units(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "analysis": "ac"}).get_data(
+                as_text=True)
+        self.assertIn('data-analysis="ac"', html)
+        self.assertIn("Frequency (Hz)", html)
+        self.assertIn("Gain (dB)", html)
+        self.assertIn("Phase (°)", html)
+        self.assertIn("Cutoff", html)
+
+    def test_spice_tran_chart_has_time_voltage_units(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE, "analysis": "tran"}).get_data(
+                as_text=True)
+        self.assertIn('data-analysis="tran"', html)
+        self.assertIn("Time (ms)", html)
+        self.assertIn("Vin (V)", html)
+        self.assertIn("Vout (V)", html)
+
+    def test_changing_source_amplitude_changes_real_plot(self):
+        quiet = self.client.post(
+            "/calculate", data={**SPICE_BASE, "analysis": "tran"}).get_data(
+                as_text=True)
+        loud = self.client.post(
+            "/calculate", data={**SPICE_BASE, "analysis": "tran",
+                                "vin_mv": "20"}).get_data(as_text=True)
+        self.assertIn("20 mV", loud)
+        self.assertNotEqual(quiet, loud)
+
+    def test_analytical_path_still_returns_lab03_reference(self):
+        html = self.client.post(
+            "/calculate", data={**SPICE_BASE,
+                                "analysis": "analytical"}).get_data(
+                                    as_text=True)
+        self.assertIn("8.052", html)
+        self.assertIn("Active region approximation OK", html)
+
+
 if __name__ == "__main__":
     unittest.main()
